@@ -1,0 +1,8 @@
+{
+  "name": "wmg-bl",
+  "version": "0.0.1",
+  "dependencies": {
+    "google-closure-library": "^20180805.0.0"
+  },
+  "main": "src/index.js"
+}
