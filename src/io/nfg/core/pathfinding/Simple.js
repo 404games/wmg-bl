@@ -102,7 +102,7 @@ io.nfg.core.pathfinding.Simple.explore = function(start, range, grid, ignoreBloc
   for (var /** @type {number} */ col = horizontalStart; col < horizontalEnd; col++) {
     for (var /** @type {number} */ row = verticalStart; row < verticalEnd; row++) {
       distance = (col - start.x) * (col - start.x) + (row - start.y) * (row - start.y);
-      if (distance < rangeSquare) {
+      if (distance <= rangeSquare) {
         if (check(row, col)) {
           result.push(new io.nfg.core.Pos(col, row));
         }

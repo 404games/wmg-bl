@@ -31,11 +31,11 @@ goog.exportSymbol('io.nfg.wmg.helpers.DeckHelper', io.nfg.wmg.helpers.DeckHelper
 /**
  * @export
  * @param {number} armyIndex
- * @param {number} unitIndex
+ * @param {number} typeIndex
  * @return {string}
  */
-io.nfg.wmg.helpers.DeckHelper.getUnitTypeFromIndexes = function(armyIndex, unitIndex) {
-  return io.nfg.wmg.helpers.DeckHelper["menusConfig"][io.nfg.wmg.helpers.DeckHelper["menusConfig"].armies[armyIndex]][unitIndex];
+io.nfg.wmg.helpers.DeckHelper.getUnitTypeFromIndexes = function(armyIndex, typeIndex) {
+  return io.nfg.wmg.helpers.DeckHelper["menusConfig"][io.nfg.wmg.helpers.DeckHelper["menusConfig"].armies[armyIndex]][typeIndex];
 };
 
 

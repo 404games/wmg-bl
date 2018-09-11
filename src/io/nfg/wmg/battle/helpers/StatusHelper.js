@@ -66,7 +66,7 @@ io.nfg.wmg.battle.helpers.StatusHelper.addStatus = function(targetEntity, status
   statusObject = io.nfg.wmg.battle.helpers.StatusHelper.getStatus(unit, status);
   statusConfig = io.nfg.wmg.battle.helpers.StatusHelper["statusesConfig"][status] || {};
   if (statusObject != null) {
-    io.nfg.wmg.battle.helpers.StatusHelper._log('updating status', unit.get('type'), statusObject);
+    io.nfg.wmg.battle.helpers.StatusHelper._log('updating status', unit.type, statusObject);
     statusObject.stacks++;
     statusObject.originEntity = originEntity;
   } else {
@@ -75,7 +75,7 @@ io.nfg.wmg.battle.helpers.StatusHelper.addStatus = function(targetEntity, status
     var /** @type {Object} */ statuses = unit.get('statuses');
     statuses.push(statusObject);
     unit.set('statuses', statuses.sort(__localFn0__));
-    io.nfg.wmg.battle.helpers.StatusHelper._log('add status', unit.get('type'), statusObject);
+    io.nfg.wmg.battle.helpers.StatusHelper._log('add status', unit.type, statusObject);
   }
   statusObject.duration = statusConfig.duration;
   if (io.nfg.wmg.battle.helpers.StatusHelper["statusesConfig"].remove != null)
@@ -121,7 +121,7 @@ io.nfg.wmg.battle.helpers.StatusHelper.getStatus = function(unit, status) {
  * @param {string} status
  */
 io.nfg.wmg.battle.helpers.StatusHelper.removeStatusFromUnit = function(unit, status) {
-  io.nfg.wmg.battle.helpers.StatusHelper._log('remove status', unit.get('type'), status);
+  io.nfg.wmg.battle.helpers.StatusHelper._log('remove status', unit.type, status);
   var /** @type {Object} */ statuses = unit.get('statuses');
   var /** @type {number} */ i, /** @type {number} */ l = Number(statuses.length);
   for (i = 0; i < l; i++) {

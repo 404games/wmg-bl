@@ -49,7 +49,7 @@ io.nfg.wmg.models.DeckUnit.prototype._getters;
  * @const
  * @type {Object}
  */
-io.nfg.wmg.models.DeckUnit.__schema = {id:Number, typeIndex:Number, armyIndex:Number, type:String, upgrades:String, fn:Number, ln:Number, pos:Array, xp:Number, applyStatuses:Array, dmg:Number, direction:Array};
+io.nfg.wmg.models.DeckUnit.__schema = {id:Number, typeIndex:Number, armyIndex:Number, name:String, type:String, upgrades:String, fn:Number, ln:Number, pos:Array, xp:Number, applyStatuses:Array, dmg:Number, direction:Array};
 
 
 /**
@@ -57,7 +57,7 @@ io.nfg.wmg.models.DeckUnit.__schema = {id:Number, typeIndex:Number, armyIndex:Nu
  * @return {Object}
  */
 io.nfg.wmg.models.DeckUnit.__defaults = function() {
-  return {armyIndex:-1, typeIndex:-1, upgrades:''};
+  return {armyIndex:-1, typeIndex:-1, upgrades:'', fn:-1, ln:-1};
 };
 
 
@@ -138,7 +138,16 @@ io.nfg.wmg.models.DeckUnit.prototype.getLastName = function() {
  * @return {string}
  */
 io.nfg.wmg.models.DeckUnit.prototype.getName = function() {
-  return this.getFirstName() + ' ' + this.getLastName();
+  return io.nfg.wmg.models.DeckUnit.superClass_.get.apply(this, [ 'name'] ) || (io.nfg.wmg.utils.Resources.configs ? this.getFirstName() + ' ' + this.getLastName() : '');
+};
+
+
+/**
+ * @export
+ * @return {string}
+ */
+io.nfg.wmg.models.DeckUnit.prototype.getShortName = function() {
+  return this.getFirstName() + ' ' + this.getLastName().substr(0, 1) + '.';
 };
 
 
@@ -146,7 +155,7 @@ io.nfg.wmg.models.DeckUnit.prototype.getName = function() {
  * @export
  * @return {number}
  */
-io.nfg.wmg.models.DeckUnit.prototype.getAvailableUpgrades = function() {
+io.nfg.wmg.models.DeckUnit.prototype.getTotalUpgrades = function() {
   var /** @type {number} */ availableUpgrades = 0;
   var /** @type {Array} */ xpLevels = io.nfg.wmg.utils.Resources.configs.logics.units.lvls;
   var /** @type {number} */ xpLevel;
@@ -162,7 +171,16 @@ io.nfg.wmg.models.DeckUnit.prototype.getAvailableUpgrades = function() {
     availableUpgrades++;
   }}
   
-  return availableUpgrades - this.getLevel();
+  return availableUpgrades;
+};
+
+
+/**
+ * @export
+ * @return {number}
+ */
+io.nfg.wmg.models.DeckUnit.prototype.getAvailableUpgrades = function() {
+  return this.getTotalUpgrades() - this.getLevel();
 };
 
 
@@ -249,7 +267,7 @@ io.nfg.wmg.models.DeckUnit.prototype.lockSkill = function(specialName) {
   var /** @type {Object} */ unitConfig = io.nfg.wmg.utils.Resources.configs.logics.units[type];
   var /** @type {number} */ specialIndex = Number(unitConfig.specials.indexOf(specialName));
   if (this.hasUpgrade(specialIndex) == false)
-    throw new Error('can\'t cancel unexisting upgrade');
+    throw 'can\'t cancel unexisting upgrade';
   upgrades = upgradesStr.split('-').slice();
   upgrades.splice(upgrades.indexOf(specialIndex), 1);
   upgradesStr = upgrades.join('-');
@@ -260,26 +278,34 @@ io.nfg.wmg.models.DeckUnit.prototype.lockSkill = function(specialName) {
 
 /**
  * @export
+ * @param {*} specialName
+ * @return {boolean}
+ */
+io.nfg.wmg.models.DeckUnit.prototype.isUnlockable = function(specialName) {
+  var /** @type {Object} */ unitConfig = io.nfg.wmg.utils.Resources.configs.logics.units[this.get('type')];
+  var /** @type {number} */ specialLevel = Number(specialName.substr(-1, 1));
+  var /** @type {string} */ specialNameReq = org.apache.royale.utils.Language.string(specialName.substr(0, specialName.length - 1) + (specialLevel - 1));
+  var /** @type {number} */ specialIndexReq = Number(unitConfig.specials.indexOf(specialNameReq));
+  return specialIndexReq == -1 || (specialIndexReq > -1 && this.hasUpgrade(specialIndexReq));
+};
+
+
+/**
+ * @export
  * @param {string} specialName
  */
 io.nfg.wmg.models.DeckUnit.prototype.unlockSkill = function(specialName) {
-  if (this.getAvailableUpgrades() < 1)
-    throw new Error('no upgrade available');
   var /** @type {string} */ type = org.apache.royale.utils.Language.string(this.get('type'));
   var /** @type {Object} */ specialConfig = io.nfg.wmg.utils.Resources.configs.logics.specials[specialName];
   var /** @type {Object} */ unitConfig = io.nfg.wmg.utils.Resources.configs.logics.units[type];
   var /** @type {string} */ upgradesStr = org.apache.royale.utils.Language.string(this.get('upgrades'));
-  var /** @type {number} */ specialLevel = Number(specialName.substr(-1, 1));
-  var /** @type {string} */ specialNameReq = specialName.substr(0, specialName.length - 1) + (specialLevel - 1);
   var /** @type {number} */ specialIndex = Number(unitConfig.specials.indexOf(specialName));
-  var /** @type {number} */ specialIndexReq;
   if (specialIndex < 0)
-    throw new Error('Special ' + specialName + ' is not available for ' + type);
+    throw 'Special ' + specialName + ' is not available for ' + type;
   if (this.hasUpgrade(specialIndex))
-    throw new Error('Special ' + specialName + ' has already been unlocked for ' + type);
-  specialIndexReq = Number(unitConfig.specials.indexOf(specialNameReq));
-  if (specialIndexReq > -1 && this.hasUpgrade(specialIndexReq) == false)
-    throw new Error('Special ' + specialName + ' requires ' + specialNameReq + ' to be unlocked first');
+    throw 'Special ' + specialName + ' has already been unlocked for ' + type;
+  if (this.isUnlockable(specialName) == false)
+    throw 'Special ' + specialName + ' requires previous level to be unlocked first';
   if (!upgradesStr)
     upgradesStr = '' + specialIndex;
   else
@@ -317,6 +343,8 @@ io.nfg.wmg.models.DeckUnit.prototype.ROYALE_REFLECTION_INFO = function () {
         'getFirstName': { type: 'String', declaredBy: 'io.nfg.wmg.models.DeckUnit'},
         'getLastName': { type: 'String', declaredBy: 'io.nfg.wmg.models.DeckUnit'},
         'getName': { type: 'String', declaredBy: 'io.nfg.wmg.models.DeckUnit'},
+        'getShortName': { type: 'String', declaredBy: 'io.nfg.wmg.models.DeckUnit'},
+        'getTotalUpgrades': { type: 'Number', declaredBy: 'io.nfg.wmg.models.DeckUnit'},
         'getAvailableUpgrades': { type: 'Number', declaredBy: 'io.nfg.wmg.models.DeckUnit'},
         'getXpThreshold': { type: 'Object', declaredBy: 'io.nfg.wmg.models.DeckUnit'},
         'set': { type: 'io.nfg.core.db.AModel', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: '*', optional: false },{ index: 2, type: '*', optional: false } ]; }},
@@ -325,6 +353,7 @@ io.nfg.wmg.models.DeckUnit.prototype.ROYALE_REFLECTION_INFO = function () {
         'toArray': { type: 'Array', declaredBy: 'io.nfg.wmg.models.DeckUnit'},
         'hasUpgrade': { type: 'Boolean', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: 'Number', optional: false } ]; }},
         'lockSkill': { type: 'void', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: 'String', optional: false } ]; }},
+        'isUnlockable': { type: 'Boolean', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: '*', optional: false } ]; }},
         'unlockSkill': { type: 'void', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: 'String', optional: false } ]; }}
       };
     }

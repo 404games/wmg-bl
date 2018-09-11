@@ -31,7 +31,7 @@ renderBattleReport = function(battle, name) {
 };
 
 
-var /** @type {string} */ logsStr = '[[3,[1,"wait1",null]],[1,[0,49]],[5,[0]],[1,[1,49]],[3,[1,"defend1",null]],[1,[1,50]],[2,[1,49]],[2,[0,50,49]]]';
+var /** @type {string} */ logsStr = '[[3,[1,"wait1",null]],[1,[0,49]],[5,[0]],[1,[1,49]],[5,[1]],[1,[1,50]],[2,[1,49]],[2,[0,50,49]]]';
 var /** @type {string} */ missionName = 'full_example';
 var /** @type {Object} */ configs = myLib.Resources.configs;
 var /** @type {io.nfg.wmg.models.Mission} */ mission;

@@ -688,9 +688,8 @@ io.nfg.wmg.battle.helpers.BattleHelper.isFlyingOnSpecialTile = function(unit, ti
  * @export
  * @param {io.nfg.wmg.battle.BattleLogic} battle
  * @param {Array} logs
- * @param {Object} configs
  */
-io.nfg.wmg.battle.helpers.BattleHelper.replay = function(battle, logs, configs) {
+io.nfg.wmg.battle.helpers.BattleHelper.replay = function(battle, logs) {
   var /** @type {Function} */ __localFn0__ = function(args) {
     args = Array.prototype.slice.call(arguments, 0);
     var /** @type {Function} */ __localFn0__ = function() {
@@ -777,7 +776,7 @@ io.nfg.wmg.battle.helpers.BattleHelper.prototype.ROYALE_REFLECTION_INFO = functi
         '|getDirectionVector': { type: 'io.nfg.core.Pos', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.core.Pos', optional: false },{ index: 2, type: 'io.nfg.core.Pos', optional: false } ]; }},
         '|isTileInRange': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.core.Pos', optional: false },{ index: 2, type: 'Vector.<io.nfg.core.Pos>', optional: false } ]; }},
         '|isFlyingOnSpecialTile': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false },{ index: 2, type: 'org.incubatio.TileMap', optional: false } ]; }},
-        '|replay': { type: 'void', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.BattleLogic', optional: false },{ index: 2, type: 'Array', optional: false },{ index: 3, type: 'Object', optional: false } ]; }},
+        '|replay': { type: 'void', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.BattleLogic', optional: false },{ index: 2, type: 'Array', optional: false } ]; }},
         '|getXpBonus': { type: 'Number', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.BattleLogic', optional: false },{ index: 2, type: 'Number', optional: false },{ index: 3, type: 'Object', optional: false } ]; }}
       };
     }

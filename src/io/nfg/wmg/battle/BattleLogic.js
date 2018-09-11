@@ -8,7 +8,7 @@
  */
 
 goog.provide('io.nfg.wmg.battle.BattleLogic');
-/* Royale Static Dependency List: io.nfg.wmg.battle.modes.Annihilation,io.nfg.wmg.battle.modes.Assassination,io.nfg.wmg.battle.modes.RoundAttack,io.nfg.wmg.battle.modes.StayAlive,io.nfg.wmg.battle.modes.RunAway,io.nfg.core.Tools,io.nfg.wmg.battle.BattleLogic*/
+/* Royale Static Dependency List: io.nfg.wmg.battle.modes.Annihilation,io.nfg.wmg.battle.modes.Assassination,io.nfg.wmg.battle.modes.RoundAttack,io.nfg.wmg.battle.modes.StayAlive,io.nfg.wmg.battle.modes.RunAway,io.nfg.wmg.battle.modes.Peace,io.nfg.core.Tools,io.nfg.wmg.battle.BattleLogic*/
 
 goog.require('io.nfg.core.Pos');
 goog.require('io.nfg.core.Tools');
@@ -25,6 +25,7 @@ goog.require('io.nfg.wmg.battle.helpers.UnitHelper');
 goog.require('io.nfg.wmg.battle.modes.AGameMode');
 goog.require('io.nfg.wmg.battle.modes.Annihilation');
 goog.require('io.nfg.wmg.battle.modes.Assassination');
+goog.require('io.nfg.wmg.battle.modes.Peace');
 goog.require('io.nfg.wmg.battle.modes.RoundAttack');
 goog.require('io.nfg.wmg.battle.modes.RunAway');
 goog.require('io.nfg.wmg.battle.modes.StayAlive');
@@ -133,7 +134,7 @@ goog.exportSymbol('io.nfg.wmg.battle.BattleLogic', io.nfg.wmg.battle.BattleLogic
  * @const
  * @type {Object}
  */
-io.nfg.wmg.battle.BattleLogic.MODES = {annihilation:io.nfg.wmg.battle.modes.Annihilation, assassination:io.nfg.wmg.battle.modes.Assassination, roundattack:io.nfg.wmg.battle.modes.RoundAttack, stayalive:io.nfg.wmg.battle.modes.StayAlive, runaway:io.nfg.wmg.battle.modes.RunAway};
+io.nfg.wmg.battle.BattleLogic.MODES = {annihilation:io.nfg.wmg.battle.modes.Annihilation, assassination:io.nfg.wmg.battle.modes.Assassination, roundattack:io.nfg.wmg.battle.modes.RoundAttack, stayalive:io.nfg.wmg.battle.modes.StayAlive, runaway:io.nfg.wmg.battle.modes.RunAway, peace:io.nfg.wmg.battle.modes.Peace};
 
 
 /**
@@ -343,6 +344,13 @@ io.nfg.wmg.battle.BattleLogic.prototype.addBattlelogEntry;
  * @type {Function}
  */
 io.nfg.wmg.battle.BattleLogic._log;
+
+
+/**
+ * @private
+ * @type {Function}
+ */
+io.nfg.wmg.battle.BattleLogic._plog;
 
 
 /**
@@ -636,7 +644,7 @@ io.nfg.wmg.battle.BattleLogic.prototype._reportException = function(e, type) {
 io.nfg.wmg.battle.BattleLogic.prototype.play = function(action, params) {
   var /** @type {string} */ err;
   var /** @type {boolean} */ res;
-  io.nfg.wmg.battle.BattleLogic._log(this._activeUnit.type, "play - " + io.nfg.wmg.battle.BattleLogic.ACTION_NAMES[action], params);
+  io.nfg.wmg.battle.BattleLogic._plog(this._activeUnit.type, "play - " + io.nfg.wmg.battle.BattleLogic.ACTION_NAMES[action], params);
   if (io.nfg.wmg.battle.BattleLogic.ACTION_NAMES[action])
     res = this[io.nfg.wmg.battle.BattleLogic.ACTION_NAMES[action]].apply(this, params);
   else
@@ -710,10 +718,7 @@ io.nfg.wmg.battle.BattleLogic.prototype.unitMove = function(entityId, gid) {
   {
     if (io.nfg.wmg.battle.helpers.BattleHelper.unitIsNextTo(unit, opportunityEntity, this._unitMap, this._tileMap)) {
       if (io.nfg.wmg.battle.helpers.UnitHelper.isAlive(unit)) {
-        targetGid = this._tileMap.tilePos2Gid(unit.tilePos.x, unit.tilePos.y);
-        fromPos = opportunityEntity.getComponent(io.nfg.wmg.battle.components.UnitData).tilePos;
-        attackFromGid = this._tileMap.tilePos2Gid(fromPos.x, fromPos.y);
-        this.unitAttack(opportunityEntity.id, targetGid, attackFromGid);
+        this._unitReact(opportunityEntity, entity, opportunityEntity.getComponent(io.nfg.wmg.battle.components.UnitData).tilePos, null);
       }
       else
         break;
@@ -741,7 +746,7 @@ io.nfg.wmg.battle.BattleLogic.prototype.unitMove = function(entityId, gid) {
   }
   var /** @type {Object} */ data = {path:path, originPosition:unit.tilePos};
   this.addBattlelogEntry(io.nfg.wmg.battle.BattleLogic.MOVE, entity, data);
-  var /** @type {io.nfg.core.Pos} */ coords = specialTile == null ? data.path[data.path.length - 1] : new io.nfg.core.Pos(specialTile.x, specialTile.y);
+  var /** @type {io.nfg.core.Pos} */ coords = specialTile && specialTile.type == io.nfg.wmg.models.SpecialTile.HOLE ? new io.nfg.core.Pos(specialTile.x, specialTile.y) : data.path[data.path.length - 1];
   var /** @type {number} */ l = path.length - 1;
   var /** @type {io.nfg.core.Pos} */ dir = unit.get('direction');
   var /** @type {io.nfg.core.Pos} */ originDir;
@@ -784,7 +789,7 @@ io.nfg.wmg.battle.BattleLogic.prototype.unitAttack = function(entityId, targetGi
   if (io.nfg.wmg.battle.helpers.StatusHelper.hasStatus(originUnit, 'double_attack'))
     actions.push({order:3, method:'_unitAttack', params:[originEntity, targetEntity, originUnit.tilePos, randFactor1]});
   order = io.nfg.wmg.battle.helpers.StatusHelper.hasStatus(targetUnit, 'preemptive') ? 0 : 2;
-  actions.push({order:order, method:'_unitRiposte', params:[targetEntity, originEntity, targetUnit.tilePos, randFactor2]});
+  actions.push({order:order, method:'_unitReact', params:[targetEntity, originEntity, targetUnit.tilePos, randFactor2]});
   org.apache.royale.utils.Language.sortOn(actions, ['order'], 16);
   var /** @type {Object} */ action;
   var foreachiter13_target = actions;
@@ -826,21 +831,21 @@ io.nfg.wmg.battle.BattleLogic.prototype._unitAttack = function(attackerEntity, t
 
 /**
  * @private
- * @param {org.incubatio.Entity} defenderEntity
- * @param {org.incubatio.Entity} attackerEntity
+ * @param {org.incubatio.Entity} reactingEntity
+ * @param {org.incubatio.Entity} targetEntity
  * @param {io.nfg.core.Pos} attackPos
  * @param {number} randFactor
  */
-io.nfg.wmg.battle.BattleLogic.prototype._unitRiposte = function(defenderEntity, attackerEntity, attackPos, randFactor) {
-  var /** @type {io.nfg.wmg.battle.components.UnitData} */ defenderUnit = defenderEntity.getComponent(io.nfg.wmg.battle.components.UnitData);
-  var /** @type {io.nfg.wmg.battle.components.UnitData} */ attackerUnit = attackerEntity.getComponent(io.nfg.wmg.battle.components.UnitData);
-  if (io.nfg.wmg.battle.helpers.StatusHelper.hasStatus(defenderUnit, 'no_riposte') == false && io.nfg.wmg.battle.helpers.StatusHelper.hasStatus(defenderUnit, 'stunned') == false && io.nfg.wmg.battle.helpers.StatusHelper.hasStatus(attackerUnit, 'prevent_riposte') == false) {
-    if (defenderUnit.get('riposteDoneNum') < io.nfg.wmg.battle.helpers.UnitHelper.getRiposteNum(defenderUnit) && defenderEntity != this._activeEntity && io.nfg.wmg.battle.helpers.BattleHelper.unitIsNextTo(defenderUnit, attackerEntity, this._unitMap, this._tileMap)) {
-      io.nfg.wmg.battle.BattleLogic._log("    " + defenderUnit.type + " is riposting");
-      this._unitAttack(defenderEntity, attackerEntity, attackPos, randFactor);
-      defenderUnit.set('riposteDoneNum', defenderUnit.get('riposteDoneNum') + 1);
+io.nfg.wmg.battle.BattleLogic.prototype._unitReact = function(reactingEntity, targetEntity, attackPos, randFactor) {
+  var /** @type {io.nfg.wmg.battle.components.UnitData} */ reactingUnit = reactingEntity.getComponent(io.nfg.wmg.battle.components.UnitData);
+  var /** @type {io.nfg.wmg.battle.components.UnitData} */ targetUnit = targetEntity.getComponent(io.nfg.wmg.battle.components.UnitData);
+  if (io.nfg.wmg.battle.helpers.StatusHelper.hasStatus(reactingUnit, 'no_riposte') == false && io.nfg.wmg.battle.helpers.StatusHelper.hasStatus(reactingUnit, 'stunned') == false && io.nfg.wmg.battle.helpers.StatusHelper.hasStatus(targetUnit, 'prevent_riposte') == false) {
+    if (io.nfg.wmg.battle.helpers.UnitHelper.canReact(reactingUnit) && reactingEntity != this._activeEntity && io.nfg.wmg.battle.helpers.BattleHelper.unitIsNextTo(reactingUnit, targetEntity, this._unitMap, this._tileMap)) {
+      io.nfg.wmg.battle.BattleLogic._log("    " + reactingUnit.type + " is riposting");
+      this._unitAttack(reactingEntity, targetEntity, attackPos, randFactor);
+      io.nfg.wmg.battle.helpers.UnitHelper.reacted(reactingUnit);
     } else {
-      io.nfg.wmg.battle.BattleLogic._log("    " + defenderUnit.type + " can't riposte");
+      io.nfg.wmg.battle.BattleLogic._log("    " + reactingUnit.type + " can't riposte");
     }
   }
 };
@@ -887,15 +892,22 @@ io.nfg.wmg.battle.BattleLogic.prototype.unitSpecial = function(entityId, special
   randFactor2 = typeof randFactor2 !== 'undefined' ? randFactor2 : -1;
   var /** @type {org.incubatio.Entity} */ originEntity = this._entities[entityId];
   try {
-    var /** @type {io.nfg.core.Pos} */ targetPos = this._tileMap.gid2TilePos(targetGid);
-    var /** @type {io.nfg.wmg.battle.components.UnitData} */ originUnit = originEntity.getComponent(io.nfg.wmg.battle.components.UnitData);
     var /** @type {Object} */ config = this._configs.logics.specials[specialName];
     if (config == null)
-      throw "[BattleLogic] no special attack with name '" + specialName + "'";
+      throw "No special attack named'" + specialName + "'";
+    var /** @type {io.nfg.core.Pos} */ targetPos = this._tileMap.gid2TilePos(targetGid);
+    var /** @type {io.nfg.wmg.battle.components.UnitData} */ originUnit = originEntity.getComponent(io.nfg.wmg.battle.components.UnitData);
+    var /** @type {Object} */ unitConfig = this._configs.logics.units[originUnit.type];
+    var /** @type {number} */ specialIndex = Number(unitConfig.specials.indexOf(specialName));
+    if (specialIndex == -1)
+      throw "Unit has no special named '" + specialName + "'";
+    if (originUnit.deckUnit.hasUpgrade(specialIndex) == false)
+      throw 'Unit doesn\'t possesses this special';
     var /** @type {Array} */ actions = [];
     var /** @type {number} */ order;
     var /** @type {Array} */ targets;
-    targets = io.nfg.wmg.battle.helpers.BattleHelper.getTargets(config.targeting, this, targetPos, attackFromGid, config);
+    var /** @type {io.nfg.core.Pos} */ targetPos2 = config.mode != 'cast_emptytile' ? targetPos : this._tileMap.gid2TilePos(attackFromGid);
+    targets = io.nfg.wmg.battle.helpers.BattleHelper.getTargets(config.targeting, this, targetPos2, attackFromGid, config);
     if (targets.length < 1 && config.mode != 'engender')
       throw "SPECIAL_ERROR_INVALID_TARGET";
     var /** @type {io.nfg.core.Pos} */ attackPos = originUnit.tilePos;
@@ -913,7 +925,7 @@ io.nfg.wmg.battle.BattleLogic.prototype.unitSpecial = function(entityId, special
     if (config.mode == 'melee') {
       targetUnit = targets[0].getComponent(io.nfg.wmg.battle.components.UnitData);
       order = io.nfg.wmg.battle.helpers.StatusHelper.hasStatus(targetUnit, 'preemptive') ? 0 : 2;
-      actions.push({order:order, method:'_unitRiposte', params:[targets[0], originEntity, targetUnit.tilePos, randFactor2]});
+      actions.push({order:order, method:'_unitReact', params:[targets[0], originEntity, targetUnit.tilePos, randFactor2]});
     }
     originUnit.set('direction', io.nfg.wmg.battle.helpers.BattleHelper.getDirectionVector(attackPos, targetPos));
     io.nfg.wmg.battle.BattleLogic._log('updateDirection', originUnit.type, originUnit.get('direction'));
@@ -1236,6 +1248,7 @@ get: io.nfg.wmg.battle.BattleLogic.prototype.get__tilesInRangeMap}}
 );
 
 io.nfg.wmg.battle.BattleLogic._log = io.nfg.core.Tools.createLogger(io.nfg.wmg.battle.BattleLogic, 'battle-logic');
+io.nfg.wmg.battle.BattleLogic._plog = io.nfg.core.Tools.createLogger(io.nfg.wmg.battle.BattleLogic, 'battle-play');
 io.nfg.wmg.battle.BattleLogic._logStatus = io.nfg.core.Tools.createLogger(io.nfg.wmg.battle.BattleLogic, 'status');
 
 

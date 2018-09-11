@@ -118,6 +118,10 @@ io.nfg.wmg.battle.Mechanics.teleport = function(battle, entity, targetPos, range
   range = typeof range !== 'undefined' ? range : 0;
   var /** @type {io.nfg.wmg.battle.components.UnitData} */ unit = entity.getComponent(io.nfg.wmg.battle.components.UnitData);
   var /** @type {number} */ dim = io.nfg.wmg.battle.helpers.UnitHelper.getDim(unit);
+  if (entity != battle.activeEntity) {
+    battle.tileMap.setTileToFree(unit.tilePos.x, unit.tilePos.y, dim);
+    battle.tileMap.setTileToOccupied(battle.activeUnit.tilePos.x, battle.activeUnit.tilePos.y, io.nfg.wmg.battle.helpers.UnitHelper.getDim(battle.activeUnit));
+  }
   if (battle.tileMap.isOccupied(targetPos.x, targetPos.y, dim))
     throw "SPECIAL_TILE_OCCUPIED";
   if (range > 0) {
@@ -125,12 +129,12 @@ io.nfg.wmg.battle.Mechanics.teleport = function(battle, entity, targetPos, range
     if (io.nfg.wmg.battle.helpers.BattleHelper.isTileInRange(targetPos, rangeArea) == false)
       throw "SPECIAL_TILE_NOT_IN_RANGE";
   }
-  if (battle.activeEntity != entity) {
-    battle.tileMap.setTileToFree(unit.tilePos.x, unit.tilePos.y, dim);
-    battle.tileMap.setTileToOccupied(targetPos.x, targetPos.y, dim);
-  }
   io.nfg.wmg.battle.Mechanics._log('teleport unit from', unit.tilePos, ' to', targetPos);
   io.nfg.wmg.battle.helpers.BattleHelper.moveUnitOnMap(entity, targetPos.x, targetPos.y, battle.unitMap, battle.tileMap.cols, dim);
+  if (entity != battle.activeEntity) {
+    battle.tileMap.setTileToOccupied(targetPos.x, targetPos.y, dim);
+    battle.tileMap.setTileToFree(battle.activeUnit.tilePos.x, battle.activeUnit.tilePos.y, io.nfg.wmg.battle.helpers.UnitHelper.getDim(battle.activeUnit));
+  }
   var /** @type {io.nfg.wmg.models.SpecialTile} */ specialTile = battle.tileMap.getSpecialTile(unit.tilePos.x, unit.tilePos.y, io.nfg.wmg.battle.helpers.UnitHelper.getDim(unit));
   if (specialTile && specialTile.type == io.nfg.wmg.models.SpecialTile.HOLE)
     io.nfg.wmg.battle.Mechanics.hole(entity, battle, new io.nfg.core.Pos(specialTile.x, specialTile.y));

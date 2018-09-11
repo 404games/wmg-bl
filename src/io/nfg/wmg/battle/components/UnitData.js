@@ -83,14 +83,16 @@ io.nfg.wmg.battle.components.UnitData.prototype.reset = function(specialIndexes,
   var /** @type {number} */ i, /** @type {number} */ index;
   var /** @type {Array} */ specials = this.get('specials');
   var /** @type {Object} */ specialCooldowns = this.get('specialCooldowns');
-  for (i = specialIndexes.length - 1; i > 0; i--) {
-    index = Number(specialIndexes[i]);
-    special = org.apache.royale.utils.Language.string(specialsConf[index]);
-    specialType = special.substr(0, special.length - 1);
-    if (buffList.indexOf(specialType) == -1) {
-      buffList.push(specialType);
-      specials.push(special);
-      specialCooldowns[special] = 0;
+  for (i = specialIndexes.length - 1; i > -1; i--) {
+    if (specialIndexes[i] && specialIndexes[i].length > 0) {
+      index = Number(specialIndexes[i]);
+      special = org.apache.royale.utils.Language.string(specialsConf[index]);
+      specialType = special.substr(0, special.length - 1);
+      if (buffList.indexOf(specialType) == -1) {
+        buffList.push(specialType);
+        specials.push(special);
+        specialCooldowns[special] = 0;
+      }
     }
   }
 };

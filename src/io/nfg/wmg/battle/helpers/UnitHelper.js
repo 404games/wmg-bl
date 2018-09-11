@@ -237,6 +237,49 @@ io.nfg.wmg.battle.helpers.UnitHelper.isFlying = function(unit) {
 };
 
 
+/**
+ * @export
+ * @param {io.nfg.wmg.battle.components.UnitData} unit
+ * @param {string} specialName
+ * @return {boolean}
+ */
+io.nfg.wmg.battle.helpers.UnitHelper.hasSpecial = function(unit, specialName) {
+  var /** @type {Object} */ unitConfig = io.nfg.wmg.battle.helpers.UnitHelper["unitsConfig"][unit.type];
+  var /** @type {number} */ specialIndex = Number(unitConfig.specials.indexOf(specialName));
+  return specialIndex > -1 && unit.deckUnit.hasUpgrade(specialIndex);
+};
+
+
+/**
+ * @export
+ * @param {io.nfg.wmg.battle.components.UnitData} unit
+ * @return {boolean}
+ */
+io.nfg.wmg.battle.helpers.UnitHelper.canReact = function(unit) {
+  return unit.get('riposteDoneNum') < io.nfg.wmg.battle.helpers.UnitHelper.getRiposteNum(unit);
+};
+
+
+/**
+ * @export
+ * @param {io.nfg.wmg.battle.components.UnitData} unit
+ */
+io.nfg.wmg.battle.helpers.UnitHelper.reacted = function(unit) {
+  unit.set('riposteDoneNum', unit.get('riposteDoneNum') + 1);
+};
+
+
+/**
+ * @export
+ * @param {io.nfg.wmg.battle.components.UnitData} unit1
+ * @param {io.nfg.wmg.battle.components.UnitData} unit2
+ * @return {boolean}
+ */
+io.nfg.wmg.battle.helpers.UnitHelper.isAlly = function(unit1, unit2) {
+  return unit1.get('pIndex') == unit2.get('pIndex');
+};
+
+
 /** Estimate unit cost according to its stats
  * def scale exponentially as it reduce % of damage from atk.
  * spd scale with atk
@@ -347,6 +390,10 @@ io.nfg.wmg.battle.helpers.UnitHelper.prototype.ROYALE_REFLECTION_INFO = function
         '|isRanged': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.UnitHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false } ]; }},
         '|isTraversingObstacle': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.UnitHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false } ]; }},
         '|isFlying': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.UnitHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false } ]; }},
+        '|hasSpecial': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.UnitHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false },{ index: 2, type: 'String', optional: false } ]; }},
+        '|canReact': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.UnitHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false } ]; }},
+        '|reacted': { type: 'void', declaredBy: 'io.nfg.wmg.battle.helpers.UnitHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false } ]; }},
+        '|isAlly': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.UnitHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false },{ index: 2, type: 'io.nfg.wmg.battle.components.UnitData', optional: false } ]; }},
         '|computeUnitCost': { type: 'Number', declaredBy: 'io.nfg.wmg.battle.helpers.UnitHelper', parameters: function () { return [  { index: 1, type: 'String', optional: false } ]; }}
       };
     }
