@@ -320,7 +320,7 @@ io.nfg.wmg.battle.helpers.UnitHelper.computeUnitCost = function(unitType) {
   var /** @type {number} */ raw_atk;
   var /** @type {number} */ raw_mag;
   raw_atk = atk = Number(org.apache.royale.utils.Language.is(unit.atk, Array) ? unit.atk[0] + unit.atk[1] : unit.atk * 2);
-  raw_mag = mag = unit.Number * 2 || 0;
+  raw_mag = mag = unit.mag * 2 || 0;
   atk *= 2;
   mag *= 2;
   if (unit.mag)

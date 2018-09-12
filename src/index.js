@@ -53,5 +53,7 @@ module.exports = {
   BattleHelper: io.nfg.wmg.battle.helpers.BattleHelper,
   BattleLogic: io.nfg.wmg.battle.BattleLogic,
   Mission: io.nfg.wmg.models.Mission,
-  UnitData: io.nfg.wmg.battle.components.UnitData
+  UnitData: io.nfg.wmg.battle.components.UnitData,
+  PlayerTypes: io.nfg.wmg.models.PlayerTypes,
+  Actor: io.nfg.wmg.models.Actor
 }

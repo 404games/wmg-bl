@@ -95,7 +95,7 @@ org.incubatio.Entity.prototype.getComponents = function() {
  */
 org.incubatio.Entity.prototype.toString = function() {
   var /** @type {io.nfg.wmg.battle.components.UnitData} */ unitData = this.getComponent(io.nfg.wmg.battle.components.UnitData);
-  return unitData && unitData.name ? unitData.name : '#' + this.id;
+  return unitData && unitData.get('name') ? unitData.get('name') : '#' + this.id;
 };
 
 

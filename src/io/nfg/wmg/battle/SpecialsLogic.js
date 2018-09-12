@@ -113,7 +113,7 @@ io.nfg.wmg.battle.SpecialsLogic.__generic = function(battle, originEntity, targe
   {
     targetUnit = targetEntity.getComponent(io.nfg.wmg.battle.components.UnitData);
     damage = 0;
-    if (config.atk || config.Number) {
+    if (config.atk || config.mag) {
       damage = io.nfg.wmg.battle.CombatsLogic.computeSpecialDamage(originUnit, targetUnit, specialName);
       options.damage = damage;
     }

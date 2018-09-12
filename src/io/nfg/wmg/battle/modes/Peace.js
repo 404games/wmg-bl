@@ -50,13 +50,13 @@ io.nfg.wmg.battle.modes.Peace.prototype._pIndex;
  * @return {boolean}
  */
 io.nfg.wmg.battle.modes.Peace.prototype._hasAnyDead = function() {
-  var /** @type {Array} */ goup;
+  var /** @type {Array} */ group;
   var foreachiter0_target = this.battle.deadGroups;
   for (var foreachiter0 in foreachiter0_target) 
   {
   group = foreachiter0_target[foreachiter0];
   {
-    if (this.group.length > 0)
+    if (group.length > 0)
       return true;
   }}
   
