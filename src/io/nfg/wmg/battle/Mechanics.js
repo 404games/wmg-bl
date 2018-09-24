@@ -53,7 +53,7 @@ io.nfg.wmg.battle.Mechanics._log;
  */
 io.nfg.wmg.battle.Mechanics.push = function(entity, battle, start, goal, maxDistance) {
   var /** @type {io.nfg.wmg.battle.components.UnitData} */ unit = entity.getComponent(io.nfg.wmg.battle.components.UnitData);
-  var /** @type {number} */ dim = io.nfg.wmg.battle.helpers.UnitHelper.getDim(unit);
+  var /** @type {number} */ dim = unit.dim;
   var /** @type {number} */ distance = 0;
   var /** @type {io.nfg.core.Pos} */ dest = unit.tilePos.clone();
   var /** @type {io.nfg.core.Pos} */ pos = unit.tilePos;
@@ -83,7 +83,7 @@ io.nfg.wmg.battle.Mechanics.push = function(entity, battle, start, goal, maxDist
     }
   }
   battle.tileMap.setTileToOccupied(dest.x, dest.y, dim);
-  io.nfg.wmg.battle.helpers.BattleHelper.moveUnitOnMap(entity, dest.x, dest.y, battle.unitMap, battle.tileMap.cols, dim);
+  io.nfg.wmg.battle.helpers.BattleHelper.moveUnitOnMap(entity, dest.x, dest.y, battle.unitMap, battle.tileMap.cols);
   if (isNotFlying && specialTile && specialTile.type == io.nfg.wmg.models.SpecialTile.HOLE)
     io.nfg.wmg.battle.Mechanics.hole(entity, battle, new io.nfg.core.Pos(specialTile.x, specialTile.y));
   return {distance:distance, targetPosition:dest, originPosition:start};
@@ -102,7 +102,6 @@ io.nfg.wmg.battle.Mechanics.hole = function(entity, battle, dest) {
   io.nfg.wmg.battle.helpers.UnitHelper.instaKill(unit);
   battle.removeIfDead(entity);
   unit.set('tilePos', dest);
-  unit.set('hasFallen', true);
   return null;
 };
 
@@ -130,12 +129,12 @@ io.nfg.wmg.battle.Mechanics.teleport = function(battle, entity, targetPos, range
       throw "SPECIAL_TILE_NOT_IN_RANGE";
   }
   io.nfg.wmg.battle.Mechanics._log('teleport unit from', unit.tilePos, ' to', targetPos);
-  io.nfg.wmg.battle.helpers.BattleHelper.moveUnitOnMap(entity, targetPos.x, targetPos.y, battle.unitMap, battle.tileMap.cols, dim);
+  io.nfg.wmg.battle.helpers.BattleHelper.moveUnitOnMap(entity, targetPos.x, targetPos.y, battle.unitMap, battle.tileMap.cols);
   if (entity != battle.activeEntity) {
     battle.tileMap.setTileToOccupied(targetPos.x, targetPos.y, dim);
-    battle.tileMap.setTileToFree(battle.activeUnit.tilePos.x, battle.activeUnit.tilePos.y, io.nfg.wmg.battle.helpers.UnitHelper.getDim(battle.activeUnit));
+    battle.tileMap.setTileToFree(battle.activeUnit.tilePos.x, battle.activeUnit.tilePos.y, battle.activeUnit.dim);
   }
-  var /** @type {io.nfg.wmg.models.SpecialTile} */ specialTile = battle.tileMap.getSpecialTile(unit.tilePos.x, unit.tilePos.y, io.nfg.wmg.battle.helpers.UnitHelper.getDim(unit));
+  var /** @type {io.nfg.wmg.models.SpecialTile} */ specialTile = battle.tileMap.getSpecialTile(unit.tilePos.x, unit.tilePos.y, unit.dim);
   if (specialTile && specialTile.type == io.nfg.wmg.models.SpecialTile.HOLE)
     io.nfg.wmg.battle.Mechanics.hole(entity, battle, new io.nfg.core.Pos(specialTile.x, specialTile.y));
   battle.updateMeleePenaltyStatus();

@@ -316,6 +316,15 @@ io.nfg.wmg.models.DeckUnit.prototype.unlockSkill = function(specialName) {
 
 
 /**
+ * @export
+ * @return {string}
+ */
+io.nfg.wmg.models.DeckUnit.prototype.toString = function() {
+  return this.toArray().join(',');
+};
+
+
+/**
  * Metadata
  *
  * @type {Object.<string, Array.<Object>>}
@@ -354,7 +363,8 @@ io.nfg.wmg.models.DeckUnit.prototype.ROYALE_REFLECTION_INFO = function () {
         'hasUpgrade': { type: 'Boolean', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: 'Number', optional: false } ]; }},
         'lockSkill': { type: 'void', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: 'String', optional: false } ]; }},
         'isUnlockable': { type: 'Boolean', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: '*', optional: false } ]; }},
-        'unlockSkill': { type: 'void', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: 'String', optional: false } ]; }}
+        'unlockSkill': { type: 'void', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: 'String', optional: false } ]; }},
+        'toString': { type: 'String', declaredBy: 'io.nfg.wmg.models.DeckUnit'}
       };
     }
   };

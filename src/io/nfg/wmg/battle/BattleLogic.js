@@ -519,6 +519,43 @@ io.nfg.wmg.battle.BattleLogic.prototype.didGameEnded = function(pIndex) {
 
 /**
  * @export
+ * @param {number} pIndex
+ * @return {boolean}
+ */
+io.nfg.wmg.battle.BattleLogic.prototype.didPlayerWin = function(pIndex) {
+  var /** @type {io.nfg.wmg.battle.modes.AGameMode} */ mode;
+  var /** @type {boolean} */ result = false;
+  var /** @type {Object} */ groups = {};
+  var foreachiter8_target = this._gameModes;
+  for (var foreachiter8 in foreachiter8_target) 
+  {
+  mode = foreachiter8_target[foreachiter8];
+  {
+    io.nfg.wmg.battle.BattleLogic._log("" + mode, mode.didPlayerWin(pIndex));
+    if (groups[mode.group] == undefined)
+      groups[mode.group] = true;
+    if (mode.didPlayerWin(pIndex) == false)
+      groups[mode.group] = false;
+  }}
+  
+  var /** @type {boolean} */ group;
+  var foreachiter9_target = groups;
+  for (var foreachiter9 in foreachiter9_target) 
+  {
+  group = foreachiter9_target[foreachiter9];
+  {
+    if (group) {
+      result = true;
+      break;
+    }
+  }}
+  
+  return result;
+};
+
+
+/**
+ * @export
  * @param {Function} cb
  */
 io.nfg.wmg.battle.BattleLogic.prototype.nextTurn = function(cb) {
@@ -528,15 +565,15 @@ io.nfg.wmg.battle.BattleLogic.prototype.nextTurn = function(cb) {
     this._tileMap.setTileToOccupied(this._activeUnit.tilePos.x, this._activeUnit.tilePos.y, io.nfg.wmg.battle.helpers.UnitHelper.getDim(this._activeUnit));
   var /** @type {org.incubatio.Entity} */ entity;
   var /** @type {Object} */ status;
-  var foreachiter8_target = this.aliveEntities;
-  for (var foreachiter8 in foreachiter8_target) 
+  var foreachiter10_target = this.aliveEntities;
+  for (var foreachiter10 in foreachiter10_target) 
   {
-  entity = foreachiter8_target[foreachiter8];
+  entity = foreachiter10_target[foreachiter10];
   {
-    var foreachiter9_target = entity.getComponent(io.nfg.wmg.battle.components.UnitData).get('statuses');
-    for (var foreachiter9 in foreachiter9_target) 
+    var foreachiter11_target = entity.getComponent(io.nfg.wmg.battle.components.UnitData).get('statuses');
+    for (var foreachiter11 in foreachiter11_target) 
     {
-    status = foreachiter9_target[foreachiter9];
+    status = foreachiter11_target[foreachiter11];
     {
       io.nfg.wmg.battle.BattleLogic._logStatus("status", entity.toString(), status.name, status.duration);
       if (status.duration == 0)
@@ -549,10 +586,10 @@ io.nfg.wmg.battle.BattleLogic.prototype.nextTurn = function(cb) {
   if (this._activeEntity) {
     this._activeUnit = this._activeEntity.getComponent(io.nfg.wmg.battle.components.UnitData);
     io.nfg.wmg.battle.BattleLogic._log("    " + ['left', 'right'][this._activeUnit.get('pIndex')] + "'s Turn ! " + this._activeUnit.type + "'s playin'");
-    var foreachiter10_target = this._activeUnit.get('statuses');
-    for (var foreachiter10 in foreachiter10_target) 
+    var foreachiter12_target = this._activeUnit.get('statuses');
+    for (var foreachiter12 in foreachiter12_target) 
     {
-    status = foreachiter10_target[foreachiter10];
+    status = foreachiter12_target[foreachiter12];
     {
       if (status.incremented != true) {
         io.nfg.wmg.battle.BattleLogic._logStatus("status", this._activeUnit.type, status.name, status.duration);
@@ -595,10 +632,10 @@ io.nfg.wmg.battle.BattleLogic.prototype._updateUnitSurrounding = function() {
   var /** @type {Object} */ tauntStatus = io.nfg.wmg.battle.helpers.StatusHelper.getStatus(this._activeUnit, 'taunted');
   if (tauntStatus) {
     var /** @type {org.incubatio.Entity} */ entity;
-    var foreachiter11_target = this._attackableEnemies;
-    for (var foreachiter11 in foreachiter11_target) 
+    var foreachiter13_target = this._attackableEnemies;
+    for (var foreachiter13 in foreachiter13_target) 
     {
-    entity = foreachiter11_target[foreachiter11];
+    entity = foreachiter13_target[foreachiter13];
     {
       if (tauntStatus.originEntity == entity) {
         this._attackableEnemies = [];
@@ -664,6 +701,9 @@ io.nfg.wmg.battle.BattleLogic.prototype.play = function(action, params) {
  */
 io.nfg.wmg.battle.BattleLogic.prototype.removeIfDead = function(entity) {
   if (io.nfg.wmg.battle.helpers.UnitHelper.isDead(entity.getComponent(io.nfg.wmg.battle.components.UnitData))) {
+    var /** @type {io.nfg.wmg.battle.components.UnitData} */ unitData = entity.getComponent(io.nfg.wmg.battle.components.UnitData);
+    if (io.nfg.wmg.battle.helpers.BattleHelper.isOnHole(unitData, this._tileMap))
+      unitData.set('hasFallen', true);
     this._unitRemove(entity);
     return true;
   }
@@ -706,15 +746,15 @@ io.nfg.wmg.battle.BattleLogic.prototype.unitMove = function(entityId, gid) {
     pos = path[i];
   }
   if (path.length < 1)
-    throw "Unit " + entity.toString() + ":" + unit.type + " can't move to" + pos;
+    throw "Unit " + entity.toString() + ":" + unit.type + " can't move to " + pos;
   var /** @type {org.incubatio.Entity} */ opportunityEntity;
   var /** @type {number} */ targetGid;
   var /** @type {io.nfg.core.Pos} */ fromPos;
   var /** @type {number} */ attackFromGid;
-  var foreachiter12_target = this.attackableEnemies;
-  for (var foreachiter12 in foreachiter12_target) 
+  var foreachiter14_target = this.attackableEnemies;
+  for (var foreachiter14 in foreachiter14_target) 
   {
-  opportunityEntity = foreachiter12_target[foreachiter12];
+  opportunityEntity = foreachiter14_target[foreachiter14];
   {
     if (io.nfg.wmg.battle.helpers.BattleHelper.unitIsNextTo(unit, opportunityEntity, this._unitMap, this._tileMap)) {
       if (io.nfg.wmg.battle.helpers.UnitHelper.isAlive(unit)) {
@@ -753,7 +793,7 @@ io.nfg.wmg.battle.BattleLogic.prototype.unitMove = function(entityId, gid) {
   originDir = (l > 1) ? path[l - 1] : unit.tilePos;
   dir.x = (coords.x - originDir.x == 0) ? 0 : (coords.x - originDir.x > 0) ? 1 : -1;
   dir.y = (coords.y - originDir.y == 0) ? 0 : (coords.y - originDir.y > 0) ? 1 : -1;
-  io.nfg.wmg.battle.helpers.BattleHelper.moveUnitOnMap(entity, coords.x, coords.y, this._unitMap, this._tileMap.cols, io.nfg.wmg.battle.helpers.UnitHelper.getDim(unit));
+  io.nfg.wmg.battle.helpers.BattleHelper.moveUnitOnMap(entity, coords.x, coords.y, this._unitMap, this._tileMap.cols);
   if (specialTile && specialTile.type == io.nfg.wmg.models.SpecialTile.HOLE) {
     io.nfg.wmg.battle.Mechanics.hole(entity, this, new io.nfg.core.Pos(specialTile.x, specialTile.y));
     unit.set('hasJumped', true);
@@ -781,7 +821,8 @@ io.nfg.wmg.battle.BattleLogic.prototype.unitAttack = function(entityId, targetGi
   var /** @type {io.nfg.wmg.battle.components.UnitData} */ originUnit = originEntity.getComponent(io.nfg.wmg.battle.components.UnitData);
   var /** @type {org.incubatio.Entity} */ targetEntity = this.unitMap[targetGid];
   var /** @type {io.nfg.wmg.battle.components.UnitData} */ targetUnit = targetEntity.getComponent(io.nfg.wmg.battle.components.UnitData);
-  if (io.nfg.wmg.battle.helpers.UnitHelper.isRanged(originUnit) == false && io.nfg.wmg.battle.helpers.BattleHelper.isUnitInContact(originUnit, targetUnit, this._tileMap) == false)
+  var /** @type {boolean} */ isRanged = io.nfg.wmg.battle.helpers.UnitHelper.isRanged(originUnit) && this._activeUnitHasEnemyNeighbour == false;
+  if (isRanged == false && io.nfg.wmg.battle.helpers.BattleHelper.isUnitInContact(originUnit, targetUnit, this._tileMap) == false)
     throw new Error('Unit needs to be in contact to be attacked');
   var /** @type {Array} */ actions = [];
   var /** @type {number} */ order;
@@ -792,10 +833,10 @@ io.nfg.wmg.battle.BattleLogic.prototype.unitAttack = function(entityId, targetGi
   actions.push({order:order, method:'_unitReact', params:[targetEntity, originEntity, targetUnit.tilePos, randFactor2]});
   org.apache.royale.utils.Language.sortOn(actions, ['order'], 16);
   var /** @type {Object} */ action;
-  var foreachiter13_target = actions;
-  for (var foreachiter13 in foreachiter13_target) 
+  var foreachiter15_target = actions;
+  for (var foreachiter15 in foreachiter15_target) 
   {
-  action = foreachiter13_target[foreachiter13];
+  action = foreachiter15_target[foreachiter15];
   
     if (io.nfg.wmg.battle.helpers.UnitHelper.isAlive(action.params[0].getComponent(io.nfg.wmg.battle.components.UnitData)))
       this[action.method].apply(this, action.params);}
@@ -859,10 +900,10 @@ io.nfg.wmg.battle.BattleLogic.prototype._unitRemove = function(entity) {
   var /** @type {io.nfg.wmg.battle.components.UnitData} */ unitData = entity.getComponent(io.nfg.wmg.battle.components.UnitData);
   var /** @type {number} */ index;
   var /** @type {Array} */ group;
-  var foreachiter14_target = this._allGroups;
-  for (var foreachiter14 in foreachiter14_target) 
+  var foreachiter16_target = this._allGroups;
+  for (var foreachiter16 in foreachiter16_target) 
   {
-  group = foreachiter14_target[foreachiter14];
+  group = foreachiter16_target[foreachiter16];
   {
     index = group.indexOf(entity);
     if (index != -1)
@@ -871,7 +912,7 @@ io.nfg.wmg.battle.BattleLogic.prototype._unitRemove = function(entity) {
   
   if (entity != this._activeEntity)
     this._tileMap.setTileToFree(unitData.tilePos.x, unitData.tilePos.y, io.nfg.wmg.battle.helpers.UnitHelper.getDim(unitData));
-  io.nfg.wmg.battle.helpers.BattleHelper.removeUnitFromMap(unitData, this._unitMap, this._tileMap.cols, io.nfg.wmg.battle.helpers.UnitHelper.getDim(entity.getComponent(io.nfg.wmg.battle.components.UnitData)));
+  io.nfg.wmg.battle.helpers.BattleHelper.removeUnitFromMap(entity, this._unitMap, this._tileMap.cols);
   this._deadGroups[unitData.get('pIndex')].push(entity);
 };
 
@@ -933,10 +974,10 @@ io.nfg.wmg.battle.BattleLogic.prototype.unitSpecial = function(entityId, special
     org.apache.royale.utils.Language.sortOn(actions, ['order'], 16);
     var /** @type {Object} */ action;
     var /** @type {org.incubatio.Entity} */ entity;
-    var foreachiter15_target = actions;
-    for (var foreachiter15 in foreachiter15_target) 
+    var foreachiter17_target = actions;
+    for (var foreachiter17 in foreachiter17_target) 
     {
-    action = foreachiter15_target[foreachiter15];
+    action = foreachiter17_target[foreachiter17];
     {
       if (io.nfg.wmg.battle.helpers.UnitHelper.isAlive(action.params[0].getComponent(io.nfg.wmg.battle.components.UnitData)))
         this[action.method].apply(this, action.params);
@@ -1030,10 +1071,10 @@ io.nfg.wmg.battle.BattleLogic.prototype.spell = function(spellName, targetGid, o
 io.nfg.wmg.battle.BattleLogic.prototype.updateMeleePenaltyStatus = function() {
   var /** @type {org.incubatio.Entity} */ entity;
   var /** @type {io.nfg.wmg.battle.components.UnitData} */ unit;
-  var foreachiter16_target = this._aliveEntities;
-  for (var foreachiter16 in foreachiter16_target) 
+  var foreachiter18_target = this._aliveEntities;
+  for (var foreachiter18 in foreachiter18_target) 
   {
-  entity = foreachiter16_target[foreachiter16];
+  entity = foreachiter18_target[foreachiter18];
   {
     unit = entity.getComponent(io.nfg.wmg.battle.components.UnitData);
     if (io.nfg.wmg.battle.helpers.UnitHelper.isRanged(unit)) {
@@ -1111,11 +1152,6 @@ io.nfg.wmg.battle.BattleLogic.prototype.get__tilesInRange = function() {
 
 io.nfg.wmg.battle.BattleLogic.prototype.get__attackableEnemies = function() {
   return this._attackableEnemies;
-};
-
-
-io.nfg.wmg.battle.BattleLogic.prototype.get__gameModes = function() {
-  return this._gameModes;
 };
 
 
@@ -1207,11 +1243,6 @@ attackableEnemies: {
 get: io.nfg.wmg.battle.BattleLogic.prototype.get__attackableEnemies},
 /**
   * @export
-  * @type {Object} */
-gameModes: {
-get: io.nfg.wmg.battle.BattleLogic.prototype.get__gameModes},
-/**
-  * @export
   * @type {Vector.<Entity>} */
 entities: {
 get: io.nfg.wmg.battle.BattleLogic.prototype.get__entities},
@@ -1291,7 +1322,6 @@ io.nfg.wmg.battle.BattleLogic.prototype.ROYALE_REFLECTION_INFO = function () {
         'tileMap': { type: 'org.incubatio.TileMap', access: 'readonly', declaredBy: 'io.nfg.wmg.battle.BattleLogic'},
         'tilesInRange': { type: 'Vector.<io.nfg.core.Pos>', access: 'readonly', declaredBy: 'io.nfg.wmg.battle.BattleLogic'},
         'attackableEnemies': { type: 'Vector.<org.incubatio.Entity>', access: 'readonly', declaredBy: 'io.nfg.wmg.battle.BattleLogic'},
-        'gameModes': { type: 'Object', access: 'readonly', declaredBy: 'io.nfg.wmg.battle.BattleLogic'},
         'entities': { type: 'Vector.<org.incubatio.Entity>', access: 'readonly', declaredBy: 'io.nfg.wmg.battle.BattleLogic'},
         'unitsInRound': { type: 'Vector.<org.incubatio.Entity>', access: 'readonly', declaredBy: 'io.nfg.wmg.battle.BattleLogic'},
         'aliveGroups': { type: 'Object', access: 'readonly', declaredBy: 'io.nfg.wmg.battle.BattleLogic'},
@@ -1308,6 +1338,7 @@ io.nfg.wmg.battle.BattleLogic.prototype.ROYALE_REFLECTION_INFO = function () {
         'clearUnits': { type: 'void', declaredBy: 'io.nfg.wmg.battle.BattleLogic'},
         'nextRound': { type: 'void', declaredBy: 'io.nfg.wmg.battle.BattleLogic', parameters: function () { return [  { index: 1, type: 'Function', optional: true } ]; }},
         'didGameEnded': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.BattleLogic', parameters: function () { return [  { index: 1, type: 'Number', optional: false } ]; }},
+        'didPlayerWin': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.BattleLogic', parameters: function () { return [  { index: 1, type: 'Number', optional: false } ]; }},
         'nextTurn': { type: 'void', declaredBy: 'io.nfg.wmg.battle.BattleLogic', parameters: function () { return [  { index: 1, type: 'Function', optional: false } ]; }},
         'play': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.BattleLogic', parameters: function () { return [  { index: 1, type: 'Number', optional: false },{ index: 2, type: 'Array', optional: false } ]; }},
         'removeIfDead': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.BattleLogic', parameters: function () { return [  { index: 1, type: 'org.incubatio.Entity', optional: false } ]; }},

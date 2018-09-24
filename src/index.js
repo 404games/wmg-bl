@@ -55,5 +55,6 @@ module.exports = {
   Mission: io.nfg.wmg.models.Mission,
   UnitData: io.nfg.wmg.battle.components.UnitData,
   PlayerTypes: io.nfg.wmg.models.PlayerTypes,
-  Actor: io.nfg.wmg.models.Actor
+  Actor: io.nfg.wmg.models.Actor,
+  DeckUnit: io.nfg.wmg.models.DeckUnit
 }

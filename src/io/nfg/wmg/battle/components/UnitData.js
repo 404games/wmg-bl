@@ -12,6 +12,7 @@ goog.provide('io.nfg.wmg.battle.components.UnitData');
 
 goog.require('io.nfg.core.Pos');
 goog.require('io.nfg.core.db.AModel');
+goog.require('io.nfg.wmg.battle.helpers.UnitHelper');
 goog.require('io.nfg.wmg.models.DeckUnit');
 goog.require('org.incubatio.core.AComponent');
 
@@ -128,6 +129,11 @@ io.nfg.wmg.battle.components.UnitData.prototype.set__damageTaken = function(dmg)
 };
 
 
+io.nfg.wmg.battle.components.UnitData.prototype.get__dim = function() {
+  return io.nfg.wmg.battle.helpers.UnitHelper.getDim(this);
+};
+
+
 Object.defineProperties(io.nfg.wmg.battle.components.UnitData.prototype, /** @lends {io.nfg.wmg.battle.components.UnitData.prototype} */ {
 /**
   * @export
@@ -150,7 +156,12 @@ set: io.nfg.wmg.battle.components.UnitData.prototype.set__type},
   * @type {number} */
 damageTaken: {
 get: io.nfg.wmg.battle.components.UnitData.prototype.get__damageTaken,
-set: io.nfg.wmg.battle.components.UnitData.prototype.set__damageTaken}}
+set: io.nfg.wmg.battle.components.UnitData.prototype.set__damageTaken},
+/**
+  * @export
+  * @type {number} */
+dim: {
+get: io.nfg.wmg.battle.components.UnitData.prototype.get__dim}}
 );
 
 
@@ -176,7 +187,8 @@ io.nfg.wmg.battle.components.UnitData.prototype.ROYALE_REFLECTION_INFO = functio
         'deckUnit': { type: 'io.nfg.wmg.models.DeckUnit', access: 'readonly', declaredBy: 'io.nfg.wmg.battle.components.UnitData'},
         'tilePos': { type: 'io.nfg.core.Pos', access: 'readonly', declaredBy: 'io.nfg.wmg.battle.components.UnitData'},
         'type': { type: 'String', access: 'readwrite', declaredBy: 'io.nfg.wmg.battle.components.UnitData'},
-        'damageTaken': { type: 'Number', access: 'readwrite', declaredBy: 'io.nfg.wmg.battle.components.UnitData'}
+        'damageTaken': { type: 'Number', access: 'readwrite', declaredBy: 'io.nfg.wmg.battle.components.UnitData'},
+        'dim': { type: 'Number', access: 'readonly', declaredBy: 'io.nfg.wmg.battle.components.UnitData'}
       };
     },
     methods: function () {

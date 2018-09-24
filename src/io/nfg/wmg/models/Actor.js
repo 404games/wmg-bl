@@ -55,7 +55,7 @@ io.nfg.wmg.models.Actor.__defaults = function() {
  * @override
  */
 io.nfg.wmg.models.Actor.prototype.set = function(key, value) {
-  if (key == 'deck' && org.apache.royale.utils.Language.is(value, org.apache.royale.utils.Language.Vector) == false)
+  if (key == 'deck' && org.apache.royale.utils.Language.is(value, Array))
     value = this.initDeck(value);
   if (key == 'type' && org.apache.royale.utils.Language.is(value, String))
     value = io.nfg.wmg.models.PlayerTypes.NAMES.indexOf(value);
@@ -65,27 +65,43 @@ io.nfg.wmg.models.Actor.prototype.set = function(key, value) {
 
 /**
  * @export
- * @param {Object} data
+ * @param {Array} data
  * @return {Array}
  */
 io.nfg.wmg.models.Actor.prototype.initDeck = function(data) {
   var /** @type {Array} */ deck = [];
   var /** @type {io.nfg.wmg.models.DeckUnit} */ deckUnit;
   var /** @type {*} */ value;
-  var foreachiter0_target = data;
-  for (var foreachiter0 in foreachiter0_target) 
-  {
-  value = foreachiter0_target[foreachiter0];
-  {
-    if (org.apache.royale.utils.Language.is(value, Array)) {
-      deckUnit = new io.nfg.wmg.models.DeckUnit({type:value[0], upgrades:value[2]});
-      deckUnit.merge(value[3]);
+  if (data.length > 0) {
+    if (org.apache.royale.utils.Language.is(data[0], Array)) {
+      var foreachiter0_target = data;
+      for (var foreachiter0 in foreachiter0_target) 
+      {
+      value = foreachiter0_target[foreachiter0];
+      {
+        deckUnit = new io.nfg.wmg.models.DeckUnit({type:value[0], upgrades:value[2]});
+        deckUnit.merge(value[3]);
+        deck.push(deckUnit);
+      }}
+      
+    } else if (org.apache.royale.utils.Language.is(data[0], io.nfg.wmg.models.DeckUnit)) {
+      var foreachiter1_target = data;
+      for (var foreachiter1 in foreachiter1_target) 
+      {
+      value = foreachiter1_target[foreachiter1];
+      
+        deck.push(value);}
+      
+    } else {
+      var foreachiter2_target = data;
+      for (var foreachiter2 in foreachiter2_target) 
+      {
+      value = foreachiter2_target[foreachiter2];
+      
+        deck.push(new io.nfg.wmg.models.DeckUnit(value));}
+      
     }
-    else
-      deckUnit = new io.nfg.wmg.models.DeckUnit(value);
-    deck.push(deckUnit);
-  }}
-  
+  }
   return deck;
 };
 
@@ -98,18 +114,18 @@ io.nfg.wmg.models.Actor.prototype.initDeck = function(data) {
  */
 io.nfg.wmg.models.Actor.getGems = function(deck, menusConfig) {
   var /** @type {Object} */ gems = {};
-  var foreachiter1_target = menusConfig.magics;
-  for (var foreachiter1 in foreachiter1_target) 
+  var foreachiter3_target = menusConfig.magics;
+  for (var foreachiter3 in foreachiter3_target) 
   {
-  var magic = foreachiter1_target[foreachiter1];
+  var magic = foreachiter3_target[foreachiter3];
   
     gems[magic] = 0;}
   
   var /** @type {io.nfg.wmg.models.DeckUnit} */ unit;
-  var foreachiter2_target = deck;
-  for (var foreachiter2 in foreachiter2_target) 
+  var foreachiter4_target = deck;
+  for (var foreachiter4 in foreachiter4_target) 
   {
-  unit = foreachiter2_target[foreachiter2];
+  unit = foreachiter4_target[foreachiter4];
   {
     gems[menusConfig.magics[menusConfig.armies.indexOf(menusConfig.unit_to_army[unit.get('type')])]]++;
   }}
@@ -141,7 +157,7 @@ io.nfg.wmg.models.Actor.prototype.ROYALE_REFLECTION_INFO = function () {
       return {
         'Actor': { type: '', declaredBy: 'io.nfg.wmg.models.Actor', parameters: function () { return [  { index: 1, type: 'Object', optional: false } ]; }},
         'set': { type: 'io.nfg.core.db.AModel', declaredBy: 'io.nfg.wmg.models.Actor', parameters: function () { return [  { index: 1, type: '*', optional: false },{ index: 2, type: '*', optional: false } ]; }},
-        'initDeck': { type: 'Vector.<io.nfg.wmg.models.DeckUnit>', declaredBy: 'io.nfg.wmg.models.Actor', parameters: function () { return [  { index: 1, type: 'Object', optional: false } ]; }},
+        'initDeck': { type: 'Vector.<io.nfg.wmg.models.DeckUnit>', declaredBy: 'io.nfg.wmg.models.Actor', parameters: function () { return [  { index: 1, type: 'Array', optional: false } ]; }},
         '|getGems': { type: 'Object', declaredBy: 'io.nfg.wmg.models.Actor', parameters: function () { return [  { index: 1, type: 'Vector.<io.nfg.wmg.models.DeckUnit>', optional: false },{ index: 2, type: 'Object', optional: false } ]; }}
       };
     }

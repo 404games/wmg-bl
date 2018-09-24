@@ -576,28 +576,24 @@ io.nfg.wmg.battle.helpers.BattleHelper.placeUnitOnMap = function(entity, unitMap
   dim = typeof dim !== 'undefined' ? dim : 1;
   var /** @type {io.nfg.wmg.battle.components.UnitData} */ unitData = entity.getComponent(io.nfg.wmg.battle.components.UnitData);
   unitMap[unitData.tilePos.y * cols + unitData.tilePos.x] = entity;
-  if (dim > 1) {
-    if (unitMap[unitData.tilePos.y * cols + unitData.tilePos.x + 1] == null)
-      unitMap[unitData.tilePos.y * cols + unitData.tilePos.x + 1] = entity;
-    if (unitMap[(unitData.tilePos.y + 1) * cols + unitData.tilePos.x] == null)
-      unitMap[(unitData.tilePos.y + 1) * cols + unitData.tilePos.x] = entity;
-    if (unitMap[(unitData.tilePos.y + 1) * cols + unitData.tilePos.x + 1] == null)
-      unitMap[(unitData.tilePos.y + 1) * cols + unitData.tilePos.x + 1] = entity;
+  if (unitData.dim > 1) {
+    unitMap[unitData.tilePos.y * cols + unitData.tilePos.x + 1] = entity;
+    unitMap[(unitData.tilePos.y + 1) * cols + unitData.tilePos.x] = entity;
+    unitMap[(unitData.tilePos.y + 1) * cols + unitData.tilePos.x + 1] = entity;
   }
 };
 
 
 /**
  * @export
- * @param {io.nfg.wmg.battle.components.UnitData} unitData
+ * @param {org.incubatio.Entity} entity
  * @param {Array} unitMap
  * @param {number} cols
- * @param {number=} dim
  */
-io.nfg.wmg.battle.helpers.BattleHelper.removeUnitFromMap = function(unitData, unitMap, cols, dim) {
-  dim = typeof dim !== 'undefined' ? dim : 1;
+io.nfg.wmg.battle.helpers.BattleHelper.removeUnitFromMap = function(entity, unitMap, cols) {
+  var /** @type {io.nfg.wmg.battle.components.UnitData} */ unitData = entity.getComponent(io.nfg.wmg.battle.components.UnitData);
   unitMap[unitData.tilePos.y * cols + unitData.tilePos.x] = null;
-  if (dim > 1) {
+  if (unitData.dim > 1) {
     unitMap[(unitData.tilePos.y + 1) * cols + unitData.tilePos.x] = null;
     unitMap[(unitData.tilePos.y + 1) * cols + unitData.tilePos.x + 1] = null;
     unitMap[unitData.tilePos.y * cols + unitData.tilePos.x + 1] = null;
@@ -612,17 +608,38 @@ io.nfg.wmg.battle.helpers.BattleHelper.removeUnitFromMap = function(unitData, un
  * @param {number} row
  * @param {Array} unitMap
  * @param {number} cols
- * @param {number=} dim
  */
-io.nfg.wmg.battle.helpers.BattleHelper.moveUnitOnMap = function(entity, col, row, unitMap, cols, dim) {
-  dim = typeof dim !== 'undefined' ? dim : 1;
+io.nfg.wmg.battle.helpers.BattleHelper.moveUnitOnMap = function(entity, col, row, unitMap, cols) {
   var /** @type {io.nfg.wmg.battle.components.UnitData} */ unitData = entity.getComponent(io.nfg.wmg.battle.components.UnitData);
   if (unitData.tilePos.x == col && unitData.tilePos.y == row)
     return;
-  io.nfg.wmg.battle.helpers.BattleHelper.removeUnitFromMap(entity.getComponent(io.nfg.wmg.battle.components.UnitData), unitMap, cols, dim);
+  io.nfg.wmg.battle.helpers.BattleHelper.removeUnitFromMap(entity, unitMap, cols);
   unitData.tilePos.x = col;
   unitData.tilePos.y = row;
-  io.nfg.wmg.battle.helpers.BattleHelper.placeUnitOnMap(entity, unitMap, cols, dim);
+  io.nfg.wmg.battle.helpers.BattleHelper.placeUnitOnMap(entity, unitMap, cols);
+};
+
+
+/**
+ * @export
+ * @param {org.incubatio.Entity} entity1
+ * @param {org.incubatio.Entity} entity2
+ * @param {Array} unitMap
+ * @param {number} cols
+ */
+io.nfg.wmg.battle.helpers.BattleHelper.swapUnitsOnMap = function(entity1, entity2, unitMap, cols) {
+  var /** @type {io.nfg.wmg.battle.components.UnitData} */ unitData1 = entity1.getComponent(io.nfg.wmg.battle.components.UnitData);
+  var /** @type {io.nfg.wmg.battle.components.UnitData} */ unitData2 = entity2.getComponent(io.nfg.wmg.battle.components.UnitData);
+  var /** @type {io.nfg.core.Pos} */ tilePos1 = unitData1.tilePos.clone();
+  var /** @type {io.nfg.core.Pos} */ tilePos2 = unitData2.tilePos.clone();
+  io.nfg.wmg.battle.helpers.BattleHelper.removeUnitFromMap(entity1, unitMap, cols);
+  io.nfg.wmg.battle.helpers.BattleHelper.removeUnitFromMap(entity2, unitMap, cols);
+  unitData1.tilePos.x = tilePos2.x;
+  unitData1.tilePos.y = tilePos2.y;
+  unitData2.tilePos.x = tilePos1.x;
+  unitData2.tilePos.y = tilePos1.y;
+  io.nfg.wmg.battle.helpers.BattleHelper.placeUnitOnMap(entity1, unitMap, cols);
+  io.nfg.wmg.battle.helpers.BattleHelper.placeUnitOnMap(entity2, unitMap, cols);
 };
 
 
@@ -676,11 +693,24 @@ io.nfg.wmg.battle.helpers.BattleHelper.isFlyingOnSpecialTile = function(unit, ti
   var /** @type {boolean} */ result = false;
   if (io.nfg.wmg.battle.helpers.UnitHelper.isFlying(unit)) {
     var /** @type {io.nfg.wmg.models.SpecialTile} */ specialTile;
-    specialTile = tileMap.getSpecialTile(unit.tilePos.x, unit.tilePos.y, io.nfg.wmg.battle.helpers.UnitHelper.getDim(unit));
+    specialTile = tileMap.getSpecialTile(unit.tilePos.x, unit.tilePos.y, unit.dim);
     if (specialTile && specialTile.isFF == false)
       result = true;
   }
   return result;
+};
+
+
+/**
+ * @export
+ * @param {io.nfg.wmg.battle.components.UnitData} unit
+ * @param {org.incubatio.TileMap} tileMap
+ * @return {boolean}
+ */
+io.nfg.wmg.battle.helpers.BattleHelper.isOnHole = function(unit, tileMap) {
+  var /** @type {io.nfg.wmg.models.SpecialTile} */ specialTile;
+  specialTile = tileMap.getSpecialTile(unit.tilePos.x, unit.tilePos.y, unit.dim);
+  return specialTile && specialTile.type == io.nfg.wmg.models.SpecialTile.HOLE;
 };
 
 
@@ -694,7 +724,7 @@ io.nfg.wmg.battle.helpers.BattleHelper.replay = function(battle, logs) {
     args = Array.prototype.slice.call(arguments, 0);
     var /** @type {Function} */ __localFn0__ = function() {
     }
-    if (battle.didGameEnded(battle.activeUnit.get('pIndex')) == false) {
+    if (logs.length > 0 && battle.didGameEnded(battle.activeUnit.get('pIndex')) == false) {
       battle.play.apply(battle, logs.shift());
       if (battle.isNextTurn && battle.isNextRound)
         battle.nextRound(__localFn0__);
@@ -730,7 +760,7 @@ io.nfg.wmg.battle.helpers.BattleHelper.getXpBonus = function(battle, pIndex, uni
     xpCount += unitConfs.xp[unit.deckUnit.getLevel()] * io.nfg.wmg.battle.helpers.UnitHelper.getDim(unit);
   }}
   
-  return xpCount / battle.aliveGroups[pIndex].length;
+  return Math.ceil(xpCount / battle.aliveGroups[pIndex].length);
 };
 
 
@@ -771,11 +801,13 @@ io.nfg.wmg.battle.helpers.BattleHelper.prototype.ROYALE_REFLECTION_INFO = functi
         '|hasEnemyNeighbour': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false },{ index: 2, type: 'Array', optional: false },{ index: 3, type: 'org.incubatio.TileMap', optional: false } ]; }},
         '|createRangeAreaMap': { type: 'Vector.<Boolean>', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'Vector.<io.nfg.core.Pos>', optional: false },{ index: 2, type: 'org.incubatio.TileMap', optional: false } ]; }},
         '|placeUnitOnMap': { type: 'void', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'org.incubatio.Entity', optional: false },{ index: 2, type: 'Array', optional: false },{ index: 3, type: 'Number', optional: false },{ index: 4, type: 'Number', optional: true } ]; }},
-        '|removeUnitFromMap': { type: 'void', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false },{ index: 2, type: 'Array', optional: false },{ index: 3, type: 'Number', optional: false },{ index: 4, type: 'Number', optional: true } ]; }},
-        '|moveUnitOnMap': { type: 'void', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'org.incubatio.Entity', optional: false },{ index: 2, type: 'Number', optional: false },{ index: 3, type: 'Number', optional: false },{ index: 4, type: 'Array', optional: false },{ index: 5, type: 'Number', optional: false },{ index: 6, type: 'Number', optional: true } ]; }},
+        '|removeUnitFromMap': { type: 'void', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'org.incubatio.Entity', optional: false },{ index: 2, type: 'Array', optional: false },{ index: 3, type: 'Number', optional: false } ]; }},
+        '|moveUnitOnMap': { type: 'void', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'org.incubatio.Entity', optional: false },{ index: 2, type: 'Number', optional: false },{ index: 3, type: 'Number', optional: false },{ index: 4, type: 'Array', optional: false },{ index: 5, type: 'Number', optional: false } ]; }},
+        '|swapUnitsOnMap': { type: 'void', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'org.incubatio.Entity', optional: false },{ index: 2, type: 'org.incubatio.Entity', optional: false },{ index: 3, type: 'Array', optional: false },{ index: 4, type: 'Number', optional: false } ]; }},
         '|getDirectionVector': { type: 'io.nfg.core.Pos', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.core.Pos', optional: false },{ index: 2, type: 'io.nfg.core.Pos', optional: false } ]; }},
         '|isTileInRange': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.core.Pos', optional: false },{ index: 2, type: 'Vector.<io.nfg.core.Pos>', optional: false } ]; }},
         '|isFlyingOnSpecialTile': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false },{ index: 2, type: 'org.incubatio.TileMap', optional: false } ]; }},
+        '|isOnHole': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false },{ index: 2, type: 'org.incubatio.TileMap', optional: false } ]; }},
         '|replay': { type: 'void', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.BattleLogic', optional: false },{ index: 2, type: 'Array', optional: false } ]; }},
         '|getXpBonus': { type: 'Number', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.BattleLogic', optional: false },{ index: 2, type: 'Number', optional: false },{ index: 3, type: 'Object', optional: false } ]; }}
       };
