@@ -82,14 +82,19 @@ io.nfg.core.pathfinding.AStar.reach = function(start, goal, grid, range) {
         for (i = 0; i < successors.length; i++) {
           successor = successors[i];
           successor.gid = successor.x + successor.y * cols;
-          if (!(successor.gid in closedSet)) {
-            successor.p = current;
-            successor.g = current.g + ((current.x == successor.x || current.y == successor.y) ? 1 : 1.41421357);
-            successor.f = Number(distance(successor, goal));
-            successor.priority = successor.g * successor.g + successor.f;
-            openedSet.enqueue(successor);
-            closedSet[successor.gid] = true;
+          successor.g = current.g + ((current.x == successor.x || current.y == successor.y) ? 1 : 1.41421357);
+          if (successor.gid in closedSet) {
+            if (successor.g < closedSet[successor.gid].g)
+              successor.f = Number(closedSet[successor.gid].f);
+            else
+              continue;
           }
+          else
+            successor.f = Number(distance(successor, goal));
+          successor.priority = successor.g * successor.g + successor.f;
+          successor.p = current;
+          openedSet.enqueue(successor);
+          closedSet[successor.gid] = successor;
         }
         length = openedSet.size();
       } else {

@@ -74,7 +74,7 @@ io.nfg.core.pathfinding.AStarNode.prototype.position = 0;
  * @override
  */
 io.nfg.core.pathfinding.AStarNode.prototype.toString = function() {
-  return ("#" + this.priority + " - [" + this.x + ", " + this.y + "]");
+  return ("#" + this.priority + " - [" + this.x + ", " + this.y + "] - " + this.g + " - " + this.f);
 };
 
 
