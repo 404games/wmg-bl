@@ -62,6 +62,20 @@ io.nfg.wmg.models.DeckUnit.__defaults = function() {
 
 
 /**
+ * @private
+ * @type {Array}
+ */
+io.nfg.wmg.models.DeckUnit.prototype._specials;
+
+
+/**
+ * @private
+ * @type {Object}
+ */
+io.nfg.wmg.models.DeckUnit.prototype._statModifiers;
+
+
+/**
  * @export
  * @return {number}
  */
@@ -210,6 +224,8 @@ io.nfg.wmg.models.DeckUnit.prototype.getXpThreshold = function() {
  * @override
  */
 io.nfg.wmg.models.DeckUnit.prototype.set = function(key, value) {
+  if (key == 'upgrades' && org.apache.royale.utils.Language.is(value, String))
+    this._upgradeInitialized = false;
   return io.nfg.wmg.models.DeckUnit.superClass_.set.apply(this, [ key, value] );
 };
 
@@ -258,14 +274,13 @@ io.nfg.wmg.models.DeckUnit.prototype.hasUpgrade = function(specialIndex) {
 
 /**
  * @export
- * @param {string} specialName
+ * @param {number} specialIndex
  */
-io.nfg.wmg.models.DeckUnit.prototype.lockSkill = function(specialName) {
+io.nfg.wmg.models.DeckUnit.prototype.lockSkill = function(specialIndex) {
   var /** @type {string} */ upgradesStr = org.apache.royale.utils.Language.string(this.get('upgrades'));
   var /** @type {Array} */ upgrades;
   var /** @type {string} */ type = org.apache.royale.utils.Language.string(this.get('type'));
   var /** @type {Object} */ unitConfig = io.nfg.wmg.utils.Resources.configs.logics.units[type];
-  var /** @type {number} */ specialIndex = Number(unitConfig.specials.indexOf(specialName));
   if (this.hasUpgrade(specialIndex) == false)
     throw 'can\'t cancel unexisting upgrade';
   upgrades = upgradesStr.split('-').slice();
@@ -292,14 +307,14 @@ io.nfg.wmg.models.DeckUnit.prototype.isUnlockable = function(specialName) {
 
 /**
  * @export
- * @param {string} specialName
+ * @param {number} specialIndex
  */
-io.nfg.wmg.models.DeckUnit.prototype.unlockSkill = function(specialName) {
+io.nfg.wmg.models.DeckUnit.prototype.unlockSkill = function(specialIndex) {
   var /** @type {string} */ type = org.apache.royale.utils.Language.string(this.get('type'));
+  var /** @type {string} */ specialName = org.apache.royale.utils.Language.string(this.allSpecials[specialIndex]);
   var /** @type {Object} */ specialConfig = io.nfg.wmg.utils.Resources.configs.logics.specials[specialName];
   var /** @type {Object} */ unitConfig = io.nfg.wmg.utils.Resources.configs.logics.units[type];
   var /** @type {string} */ upgradesStr = org.apache.royale.utils.Language.string(this.get('upgrades'));
-  var /** @type {number} */ specialIndex = Number(unitConfig.specials.indexOf(specialName));
   if (specialIndex < 0)
     throw 'Special ' + specialName + ' is not available for ' + type;
   if (this.hasUpgrade(specialIndex))
@@ -325,6 +340,96 @@ io.nfg.wmg.models.DeckUnit.prototype.toString = function() {
 
 
 /**
+ * @private
+ * @type {boolean}
+ */
+io.nfg.wmg.models.DeckUnit.prototype._upgradeInitialized = false;
+
+
+/**
+ * @private
+ */
+io.nfg.wmg.models.DeckUnit.prototype._initUpgrades = function() {
+  if (this._upgradeInitialized)
+    return;
+  var /** @type {Array} */ specialIndexes = this.get('upgrades').split('-');
+  var /** @type {string} */ special;
+  var /** @type {string} */ specialType;
+  var /** @type {Array} */ buffList = [];
+  var /** @type {number} */ i, /** @type {number} */ index;
+  var /** @type {Array} */ specials = org.apache.royale.utils.Language.Vector();
+  var /** @type {Object} */ statModifiers = {atk:0, mag:0, vit:0, def:0, spd:0};
+  var /** @type {number} */ statValue;
+  var /** @type {string} */ statKey;
+  for (i = specialIndexes.length - 1; i > -1; i--) {
+    if (specialIndexes[i] && specialIndexes[i].length > 0) {
+      index = Number(specialIndexes[i]);
+      special = org.apache.royale.utils.Language.string(this.allSpecials[index]);
+      specialType = special.substr(0, special.length - 1);
+      statValue = Number(special.substr(0, 1));
+      if (isNaN(statValue)) {
+        if (buffList.indexOf(specialType) == -1) {
+          buffList.push(specialType);
+          specials.push(specialIndexes[i]);
+        }
+      } else {
+        statKey = special.substr(1);
+        statModifiers[statKey] += statValue;
+      }
+    }
+  }
+  this._specials = specials;
+  this._statModifiers = statModifiers;
+  this._upgradeInitialized = true;
+};
+
+
+/**
+ * @export
+ * @return {Array}
+ */
+io.nfg.wmg.models.DeckUnit.prototype.getSpecials = function() {
+  this._initUpgrades();
+  return this._specials;
+};
+
+
+/**
+ * @export
+ * @return {Object}
+ */
+io.nfg.wmg.models.DeckUnit.prototype.getStatModifiers = function() {
+  this._initUpgrades();
+  return this._statModifiers;
+};
+
+
+/**
+ * @export
+ * @param {string} statName
+ * @return {number}
+ */
+io.nfg.wmg.models.DeckUnit.prototype.getStat = function(statName) {
+  var /** @type {Object} */ unitConfs = io.nfg.wmg.utils.Resources.configs.logics.units;
+  return unitConfs[this.get('type')][statName] + this.getStatModifiers()[statName];
+};
+
+
+io.nfg.wmg.models.DeckUnit.prototype.get__allSpecials = function() {
+  return io.nfg.wmg.utils.Resources.configs.logics.units[this.get('type')].specials;
+};
+
+
+Object.defineProperties(io.nfg.wmg.models.DeckUnit.prototype, /** @lends {io.nfg.wmg.models.DeckUnit.prototype} */ {
+/**
+  * @export
+  * @type {Object} */
+allSpecials: {
+get: io.nfg.wmg.models.DeckUnit.prototype.get__allSpecials}}
+);
+
+
+/**
  * Metadata
  *
  * @type {Object.<string, Array.<Object>>}
@@ -341,7 +446,11 @@ io.nfg.wmg.models.DeckUnit.prototype.ROYALE_CLASS_INFO = { names: [{ name: 'Deck
 io.nfg.wmg.models.DeckUnit.prototype.ROYALE_REFLECTION_INFO = function () {
   return {
     variables: function () {return {};},
-    accessors: function () {return {};},
+    accessors: function () {
+      return {
+        'allSpecials': { type: 'Object', access: 'readonly', declaredBy: 'io.nfg.wmg.models.DeckUnit'}
+      };
+    },
     methods: function () {
       return {
         'DeckUnit': { type: '', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: 'Object', optional: false } ]; }},
@@ -361,10 +470,13 @@ io.nfg.wmg.models.DeckUnit.prototype.ROYALE_REFLECTION_INFO = function () {
         '|fromString': { type: 'io.nfg.wmg.models.DeckUnit', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: 'String', optional: false } ]; }},
         'toArray': { type: 'Array', declaredBy: 'io.nfg.wmg.models.DeckUnit'},
         'hasUpgrade': { type: 'Boolean', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: 'Number', optional: false } ]; }},
-        'lockSkill': { type: 'void', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: 'String', optional: false } ]; }},
+        'lockSkill': { type: 'void', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: 'Number', optional: false } ]; }},
         'isUnlockable': { type: 'Boolean', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: '*', optional: false } ]; }},
-        'unlockSkill': { type: 'void', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: 'String', optional: false } ]; }},
-        'toString': { type: 'String', declaredBy: 'io.nfg.wmg.models.DeckUnit'}
+        'unlockSkill': { type: 'void', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: 'Number', optional: false } ]; }},
+        'toString': { type: 'String', declaredBy: 'io.nfg.wmg.models.DeckUnit'},
+        'getSpecials': { type: 'Vector.<Number>', declaredBy: 'io.nfg.wmg.models.DeckUnit'},
+        'getStatModifiers': { type: 'Object', declaredBy: 'io.nfg.wmg.models.DeckUnit'},
+        'getStat': { type: 'Number', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: 'String', optional: false } ]; }}
       };
     }
   };

@@ -880,7 +880,7 @@ io.nfg.wmg.battle.BattleLogic.prototype._unitAttack = function(attackerEntity, t
 io.nfg.wmg.battle.BattleLogic.prototype._unitReact = function(reactingEntity, targetEntity, attackPos, randFactor) {
   var /** @type {io.nfg.wmg.battle.components.UnitData} */ reactingUnit = reactingEntity.getComponent(io.nfg.wmg.battle.components.UnitData);
   var /** @type {io.nfg.wmg.battle.components.UnitData} */ targetUnit = targetEntity.getComponent(io.nfg.wmg.battle.components.UnitData);
-  if (io.nfg.wmg.battle.helpers.StatusHelper.hasStatus(reactingUnit, 'no_riposte') == false && io.nfg.wmg.battle.helpers.StatusHelper.hasStatus(reactingUnit, 'stunned') == false && io.nfg.wmg.battle.helpers.StatusHelper.hasStatus(targetUnit, 'prevent_riposte') == false) {
+  if (io.nfg.wmg.battle.helpers.StatusHelper.hasStatus(reactingUnit, 'no_riposte') == false && io.nfg.wmg.battle.helpers.StatusHelper.hasStatus(reactingUnit, 'stunned') == false && io.nfg.wmg.battle.helpers.StatusHelper.hasStatus(targetUnit, 'prevent_riposte') == false && reactingUnit.get('pIndex') != targetUnit.get('pIndex')) {
     if (io.nfg.wmg.battle.helpers.UnitHelper.canReact(reactingUnit) && reactingEntity != this._activeEntity && io.nfg.wmg.battle.helpers.BattleHelper.unitIsNextTo(reactingUnit, targetEntity, this._unitMap, this._tileMap)) {
       io.nfg.wmg.battle.BattleLogic._log("    " + reactingUnit.type + " is riposting");
       this._unitAttack(reactingEntity, targetEntity, attackPos, randFactor);

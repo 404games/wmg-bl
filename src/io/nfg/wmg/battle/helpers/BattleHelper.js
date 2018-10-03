@@ -162,7 +162,6 @@ io.nfg.wmg.battle.helpers.BattleHelper.getTargets = function(targeting, battle, 
   var /** @type {number} */ pIndex = Number(battle.activeUnit.get('pIndex'));
   var /** @type {Array} */ applyTo;
   var /** @type {org.incubatio.Entity} */ targetEntity = battle.unitMap[tileMap.tilePos2Gid(targetPos.x, targetPos.y)];
-  var /** @type {io.nfg.wmg.battle.components.UnitData} */ unit;
   switch (targeting) {
     case 'all':
       applyTo = battle.aliveEntities.concat();
@@ -197,9 +196,16 @@ io.nfg.wmg.battle.helpers.BattleHelper.getTargets = function(targeting, battle, 
     case 'self':
       applyTo = [battle.activeEntity];
       break;
+    case 'ally':
+      applyTo = [];
+      if (targetEntity) {
+        var /** @type {io.nfg.wmg.battle.components.UnitData} */ unit = targetEntity.getComponent(io.nfg.wmg.battle.components.UnitData);
+        if (unit.get('pIndex') == battle.activeUnit.get('pIndex'))
+          applyTo.push(targetEntity);
+      }
+      break;
     case 'twotiles':
-      applyTo = org.apache.royale.utils.Language.Vector();
-      applyTo.push(targetEntity);
+      applyTo = [targetEntity];
       var /** @type {io.nfg.core.Pos} */ dir = io.nfg.wmg.battle.helpers.BattleHelper.getDirectionVector(battle.tileMap.gid2TilePos(fromGid), targetPos);
       if (!tileMap.isOutOfBounds(targetPos.x + dir.x, targetPos.y + dir.y)) {
         var /** @type {number} */ targetGid = tileMap.tilePos2Gid(targetPos.x + dir.x, targetPos.y + dir.y);
@@ -332,7 +338,7 @@ io.nfg.wmg.battle.helpers.BattleHelper.getPathTo = function(entity, to, tileMap,
 io.nfg.wmg.battle.helpers.BattleHelper.getRangeArea = function(unit, tileMap, avoidHole) {
   avoidHole = typeof avoidHole !== 'undefined' ? avoidHole : false;
   var /** @type {boolean} */ ignoreObstacles = io.nfg.wmg.battle.helpers.UnitHelper.isTraversingObstacle(unit);
-  var /** @type {Array} */ collisionGrid = tileMap.collisionGrid[io.nfg.wmg.battle.helpers.UnitHelper.getDim(unit) - 1];
+  var /** @type {Array} */ collisionGrid = tileMap.collisionGrid[unit.dim - 1];
   var /** @type {number} */ range = io.nfg.wmg.battle.helpers.UnitHelper.getMovementRange(unit);
   var /** @type {Array} */ area;
   var /** @type {io.nfg.wmg.models.SpecialTile} */ specialTile;

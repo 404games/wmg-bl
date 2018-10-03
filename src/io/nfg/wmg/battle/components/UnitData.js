@@ -50,7 +50,7 @@ io.nfg.wmg.battle.components.UnitData.SPECIAL_HOTKEY = ['Q', 'W', 'E', 'R'];
  * @const
  * @type {Object}
  */
-io.nfg.wmg.battle.components.UnitData.__schema = {name:String, deckUnit:io.nfg.wmg.models.DeckUnit, tilePos:io.nfg.core.Pos, direction:io.nfg.core.Pos, gid:Number, pIndex:Number, hasWaited:Boolean, hasMoved:Boolean, hasFallen:Boolean, hasJumped:Boolean, passiveSkill:org.apache.royale.utils.Language.Vector, statuses:org.apache.royale.utils.Language.Vector, specialCooldowns:Object, uses:Object, specials:org.apache.royale.utils.Language.Vector, ammo:Number, riposteDoneNum:Number, unitsNumber:Number, damageTaken:Number};
+io.nfg.wmg.battle.components.UnitData.__schema = {name:String, deckUnit:io.nfg.wmg.models.DeckUnit, tilePos:io.nfg.core.Pos, direction:io.nfg.core.Pos, gid:Number, pIndex:Number, hasWaited:Boolean, hasMoved:Boolean, hasFallen:Boolean, hasJumped:Boolean, passiveSkill:org.apache.royale.utils.Language.Vector, statuses:org.apache.royale.utils.Language.Vector, specialCooldowns:Object, uses:Object, ammo:Number, riposteDoneNum:Number, unitsNumber:Number, damageTaken:Number};
 
 
 /**
@@ -58,7 +58,7 @@ io.nfg.wmg.battle.components.UnitData.__schema = {name:String, deckUnit:io.nfg.w
  * @return {Object}
  */
 io.nfg.wmg.battle.components.UnitData.__defaults = function() {
-  return {ammo:0, riposteDoneNum:0, damageTaken:0, uses:{}, passiveSkill:org.apache.royale.utils.Language.Vector(), statuses:org.apache.royale.utils.Language.Vector(), specials:org.apache.royale.utils.Language.Vector(), specialCooldowns:{}};
+  return {ammo:0, riposteDoneNum:0, damageTaken:0, uses:{}, passiveSkill:org.apache.royale.utils.Language.Vector(), statuses:org.apache.royale.utils.Language.Vector(), specialCooldowns:{}};
 };
 
 
@@ -68,33 +68,43 @@ io.nfg.wmg.battle.components.UnitData.__defaults = function() {
  * @return {string}
  */
 io.nfg.wmg.battle.components.UnitData.prototype.getHotkey = function(specialName) {
-  return io.nfg.wmg.battle.components.UnitData.SPECIAL_HOTKEY[this.get('specials').indexOf(specialName)];
+  return io.nfg.wmg.battle.components.UnitData.SPECIAL_HOTKEY[this.deckUnit.getSpecials().indexOf(this.deckUnit.allSpecials.indexOf(specialName))];
 };
 
 
 /**
  * @export
- * @param {Array} specialIndexes
- * @param {Object} specialsConf
+ * @override
  */
-io.nfg.wmg.battle.components.UnitData.prototype.reset = function(specialIndexes, specialsConf) {
-  var /** @type {string} */ special;
-  var /** @type {string} */ specialType;
-  var /** @type {Array} */ buffList = [];
-  var /** @type {number} */ i, /** @type {number} */ index;
-  var /** @type {Array} */ specials = this.get('specials');
-  var /** @type {Object} */ specialCooldowns = this.get('specialCooldowns');
-  for (i = specialIndexes.length - 1; i > -1; i--) {
-    if (specialIndexes[i] && specialIndexes[i].length > 0) {
-      index = Number(specialIndexes[i]);
-      special = org.apache.royale.utils.Language.string(specialsConf[index]);
-      specialType = special.substr(0, special.length - 1);
-      if (buffList.indexOf(specialType) == -1) {
-        buffList.push(specialType);
-        specials.push(special);
-        specialCooldowns[special] = 0;
-      }
-    }
+io.nfg.wmg.battle.components.UnitData.prototype.get = function(key) {
+  if (key == 'specialCooldowns')
+    this._initSpecialCooldowns();
+  return io.nfg.wmg.battle.components.UnitData.superClass_.get.apply(this, [ key] );
+};
+
+
+/**
+ * @private
+ * @type {boolean}
+ */
+io.nfg.wmg.battle.components.UnitData.prototype._specialCooldownsInitialized;
+
+
+/**
+ * @export
+ */
+io.nfg.wmg.battle.components.UnitData.prototype._initSpecialCooldowns = function() {
+  if (this._specialCooldownsInitialized == false) {
+    var /** @type {Object} */ specialCooldowns = io.nfg.wmg.battle.components.UnitData.superClass_.get.apply(this, [ 'specialCooldowns'] );
+    var /** @type {string} */ special;
+    var foreachiter0_target = this.deckUnit.getSpecials();
+    for (var foreachiter0 in foreachiter0_target) 
+    {
+    special = foreachiter0_target[foreachiter0];
+    
+      specialCooldowns[this.deckUnit.allSpecials[special]] = 0;}
+    
+    this._specialCooldownsInitialized = true;
   }
 };
 
@@ -195,7 +205,8 @@ io.nfg.wmg.battle.components.UnitData.prototype.ROYALE_REFLECTION_INFO = functio
       return {
         'UnitData': { type: '', declaredBy: 'io.nfg.wmg.battle.components.UnitData', parameters: function () { return [  { index: 1, type: 'Object', optional: true } ]; }},
         'getHotkey': { type: 'String', declaredBy: 'io.nfg.wmg.battle.components.UnitData', parameters: function () { return [  { index: 1, type: 'String', optional: false } ]; }},
-        'reset': { type: 'void', declaredBy: 'io.nfg.wmg.battle.components.UnitData', parameters: function () { return [  { index: 1, type: 'Array', optional: false },{ index: 2, type: 'Object', optional: false } ]; }}
+        'get': { type: '*', declaredBy: 'io.nfg.wmg.battle.components.UnitData', parameters: function () { return [  { index: 1, type: '*', optional: false } ]; }},
+        '_initSpecialCooldowns': { type: 'void', declaredBy: 'io.nfg.wmg.battle.components.UnitData'}
       };
     }
   };

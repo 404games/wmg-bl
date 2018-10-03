@@ -17,7 +17,6 @@ goog.require('io.nfg.wmg.battle.helpers.StatusHelper');
 goog.require('io.nfg.wmg.battle.helpers.UnitHelper');
 goog.require('io.nfg.wmg.models.Actor');
 goog.require('io.nfg.wmg.models.DeckUnit');
-goog.require('io.nfg.wmg.utils.Resources');
 goog.require('org.incubatio.Entity');
 goog.require('org.incubatio.TileMap');
 goog.require('org.apache.royale.utils.Language');
@@ -58,7 +57,6 @@ io.nfg.wmg.battle.EntityFactory.create = function(id, deckUnit, pIndex) {
   var /** @type {org.incubatio.Entity} */ entity = new org.incubatio.Entity(id);
   var /** @type {io.nfg.wmg.battle.components.UnitData} */ unit = new io.nfg.wmg.battle.components.UnitData({deckUnit:deckUnit, pIndex:pIndex, direction:new io.nfg.core.Pos(pIndex == 0 ? 1 : -1, 0)});
   unit.set('ammo', io.nfg.wmg.battle.helpers.UnitHelper.getNumberOfProjectilse(unit));
-  unit.reset(deckUnit.get('upgrades').split('-'), io.nfg.wmg.utils.Resources.configs.logics.units[unit.type].specials);
   entity.addComponent(unit);
   if (org.apache.royale.utils.Language.is(deckUnit.get('applyStatuses'), Array)) {
     var /** @type {string} */ statusName;

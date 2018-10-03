@@ -35,7 +35,7 @@ goog.exportSymbol('io.nfg.wmg.battle.helpers.UnitHelper', io.nfg.wmg.battle.help
  * @return {boolean}
  */
 io.nfg.wmg.battle.helpers.UnitHelper.isAlive = function(unit) {
-  return io.nfg.wmg.battle.helpers.UnitHelper["unitsConfig"][unit["type"]]["vit"] > unit.get('damageTaken');
+  return unit.deckUnit.getStat("vit") > unit.get('damageTaken');
 };
 
 
@@ -55,7 +55,7 @@ io.nfg.wmg.battle.helpers.UnitHelper.isDead = function(unit) {
  * @return {number}
  */
 io.nfg.wmg.battle.helpers.UnitHelper.getRiposteNum = function(unit) {
-  return io.nfg.wmg.battle.helpers.UnitHelper["unitsConfig"][unit.type]["riposte"] || 1;
+  return 1;
 };
 
 
@@ -75,7 +75,7 @@ io.nfg.wmg.battle.helpers.UnitHelper.getDim = function(unit) {
  * @return {number}
  */
 io.nfg.wmg.battle.helpers.UnitHelper.getHealth = function(unit) {
-  return io.nfg.wmg.battle.helpers.UnitHelper["unitsConfig"][unit.type]["vit"] - unit.get('damageTaken');
+  return unit.deckUnit.getStat("vit") - unit.get('damageTaken');
 };
 
 
@@ -84,7 +84,7 @@ io.nfg.wmg.battle.helpers.UnitHelper.getHealth = function(unit) {
  * @param {io.nfg.wmg.battle.components.UnitData} unit
  */
 io.nfg.wmg.battle.helpers.UnitHelper.instaKill = function(unit) {
-  unit.set('damageTaken', io.nfg.wmg.battle.helpers.UnitHelper["unitsConfig"][unit.type]["vit"]);
+  unit.set('damageTaken', unit.deckUnit.getStat("vit"));
 };
 
 
@@ -104,7 +104,7 @@ io.nfg.wmg.battle.helpers.UnitHelper.getHealthInPercent = function(unit) {
  * @return {number}
  */
 io.nfg.wmg.battle.helpers.UnitHelper.getMaxHealth = function(unit) {
-  return io.nfg.wmg.battle.helpers.UnitHelper["unitsConfig"][unit.type]["vit"];
+  return unit.deckUnit.getStat("vit");
 };
 
 
@@ -141,18 +141,18 @@ io.nfg.wmg.battle.helpers.UnitHelper.getNumberOfProjectilse = function(unit) {
 
 /**
  * @export
- * @param {number} result
  * @param {number} value
+ * @param {number} modifier
  * @return {number}
  */
-io.nfg.wmg.battle.helpers.UnitHelper.applyModifier = function(result, value) {
-  if (value < 1 && value > -1)
-    result += result * value;
-  if (value < -99 || value > 99)
-    result += result * value * 0.01;
+io.nfg.wmg.battle.helpers.UnitHelper.applyModifier = function(value, modifier) {
+  if (modifier < 1 && modifier > -1)
+    value *= modifier;
+  else if (modifier < -99 || modifier > 99)
+    value *= modifier * 0.01;
   else
-    result = result + value;
-  return result < 0 ? Math.floor(result) : Math.ceil(result);
+    value += modifier;
+  return value < 0 ? Math.floor(value) : Math.ceil(value);
 };
 
 
@@ -161,14 +161,14 @@ io.nfg.wmg.battle.helpers.UnitHelper.applyModifier = function(result, value) {
  * @export
  * @param {io.nfg.wmg.battle.components.UnitData} unit
  * @param {string} statName
- * @param {number=} result
+ * @param {number=} value
  * @return {number}
  */
-io.nfg.wmg.battle.helpers.UnitHelper.applyModifiers = function(unit, statName, result) {
-  result = typeof result !== 'undefined' ? result : -1;
-  var /** @type {Object} */ status, /** @type {number} */ value;
-  if (result < 0)
-    result = Number(io.nfg.wmg.battle.helpers.UnitHelper["unitsConfig"][unit.type][statName]);
+io.nfg.wmg.battle.helpers.UnitHelper.applyModifiers = function(unit, statName, value) {
+  value = typeof value !== 'undefined' ? value : 0;
+  var /** @type {Object} */ status, /** @type {number} */ modifier;
+  if (value == 0)
+    value = unit.deckUnit.getStat(statName);
   var /** @type {Object} */ statusConfig;
   var foreachiter0_target = unit.get('statuses');
   for (var foreachiter0 in foreachiter0_target) 
@@ -176,13 +176,13 @@ io.nfg.wmg.battle.helpers.UnitHelper.applyModifiers = function(unit, statName, r
   status = foreachiter0_target[foreachiter0];
   {
     statusConfig = io.nfg.wmg.battle.helpers.StatusHelper["statusesConfig"][status.name];
-    value = Number(statusConfig[statName]);
-    if (value && value != 0) {
-      result = io.nfg.wmg.battle.helpers.UnitHelper.applyModifier(result, value);
+    modifier = Number(statusConfig[statName]);
+    if (modifier && modifier != 0) {
+      value += io.nfg.wmg.battle.helpers.UnitHelper.applyModifier(value, modifier);
     }
   }}
   
-  return result < 0 ? Math.floor(result) : Math.ceil(result);
+  return value < 0 ? Math.floor(value) : Math.ceil(value);
 };
 
 
@@ -277,6 +277,16 @@ io.nfg.wmg.battle.helpers.UnitHelper.reacted = function(unit) {
  */
 io.nfg.wmg.battle.helpers.UnitHelper.isAlly = function(unit1, unit2) {
   return unit1.get('pIndex') == unit2.get('pIndex');
+};
+
+
+/**
+ * @export
+ * @param {string} skill
+ * @return {boolean}
+ */
+io.nfg.wmg.battle.helpers.UnitHelper.isSkillUpgrade = function(skill) {
+  return isNaN(Number(skill.substr(0, 1)));
 };
 
 
@@ -394,6 +404,7 @@ io.nfg.wmg.battle.helpers.UnitHelper.prototype.ROYALE_REFLECTION_INFO = function
         '|canReact': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.UnitHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false } ]; }},
         '|reacted': { type: 'void', declaredBy: 'io.nfg.wmg.battle.helpers.UnitHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false } ]; }},
         '|isAlly': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.UnitHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false },{ index: 2, type: 'io.nfg.wmg.battle.components.UnitData', optional: false } ]; }},
+        '|isSkillUpgrade': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.UnitHelper', parameters: function () { return [  { index: 1, type: 'String', optional: false } ]; }},
         '|computeUnitCost': { type: 'Number', declaredBy: 'io.nfg.wmg.battle.helpers.UnitHelper', parameters: function () { return [  { index: 1, type: 'String', optional: false } ]; }}
       };
     }

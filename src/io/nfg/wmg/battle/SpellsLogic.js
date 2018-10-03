@@ -17,7 +17,6 @@ goog.require('io.nfg.wmg.battle.Mechanics');
 goog.require('io.nfg.wmg.battle.components.UnitData');
 goog.require('io.nfg.wmg.battle.helpers.StatusHelper');
 goog.require('io.nfg.wmg.battle.helpers.UnitHelper');
-goog.require('io.nfg.wmg.utils.Resources');
 goog.require('org.incubatio.Entity');
 
 
@@ -147,7 +146,6 @@ io.nfg.wmg.battle.SpellsLogic.evolve = function(battle, targetPos, targets, conf
     targetUnit.tilePos.copyFrom(evoPos);
   }
   targetUnit.type = org.apache.royale.utils.Language.string(typeMap[targetUnit.type]);
-  targetUnit.reset([0], io.nfg.wmg.utils.Resources.configs.logics.units[targetUnit.type].specials);
   return options;
 };
 

@@ -90,7 +90,7 @@ io.nfg.core.pathfinding.Simple.explore = function(start, range, grid, ignoreBloc
     return true;
   }
   var /** @type {Function} */ __localFn1__ = function(row, col) {
-    return !grid[row][col];
+    return grid.length > row && grid[row].length > col && !grid[row][col];
   }
   var /** @type {Array} */ result = [], /** @type {number} */ rows = grid.length, /** @type {number} */ cols = Number(grid[0].length), /** @type {number} */ horizontalStart, /** @type {number} */ horizontalEnd, /** @type {number} */ verticalStart, /** @type {number} */ verticalEnd, /** @type {number} */ distance;
   horizontalStart = (start.x - range) > 0 ? start.x - range : 0;
@@ -99,8 +99,8 @@ io.nfg.core.pathfinding.Simple.explore = function(start, range, grid, ignoreBloc
   verticalEnd = (start.y + range) < rows ? start.y + range : rows;
   var /** @type {number} */ rangeSquare = range * range;
   var /** @type {Function} */ check = ignoreBlockedTiles ? __localFn0__ : __localFn1__;
-  for (var /** @type {number} */ col = horizontalStart; col < horizontalEnd; col++) {
-    for (var /** @type {number} */ row = verticalStart; row < verticalEnd; row++) {
+  for (var /** @type {number} */ col = horizontalStart; col <= horizontalEnd; col++) {
+    for (var /** @type {number} */ row = verticalStart; row <= verticalEnd; row++) {
       distance = (col - start.x) * (col - start.x) + (row - start.y) * (row - start.y);
       if (distance <= rangeSquare) {
         if (check(row, col)) {

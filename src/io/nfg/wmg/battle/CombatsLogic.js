@@ -51,11 +51,12 @@ io.nfg.wmg.battle.CombatsLogic.computeDamage = function(attackerData, targetData
   io.nfg.wmg.battle.CombatsLogic._log();
   var /** @type {number} */ atkDamages = 0;
   var /** @type {number} */ magDamages = 0;
-  if (io.nfg.wmg.battle.helpers.UnitHelper["unitsConfig"][attackerData.type].mag) {
+  var /** @type {number} */ magStat = attackerData.deckUnit.getStat('mag');
+  var /** @type {number} */ atkStat = attackerData.deckUnit.getStat('atk');
+  if (magStat > 0) {
     magDamages += io.nfg.wmg.battle.helpers.UnitHelper.applyModifiers(attackerData, "mag");
     io.nfg.wmg.battle.CombatsLogic._log('mag damage', magDamages);
-  }
-  if (io.nfg.wmg.battle.helpers.UnitHelper["unitsConfig"][attackerData.type].atk) {
+  } else if (atkStat > 0) {
     atkDamages += io.nfg.wmg.battle.helpers.UnitHelper.applyModifiers(attackerData, "atk");
     io.nfg.wmg.battle.CombatsLogic._log('atk damage', atkDamages);
     if (io.nfg.wmg.battle.CombatsLogic.isBackstabbing(attackerData, targetData)) {
@@ -85,9 +86,10 @@ io.nfg.wmg.battle.CombatsLogic.computeSpecialDamage = function(attackerData, tar
   var /** @type {number} */ magDamages = 0;
   magDamages = Number(config.mag);
   if (!magDamages) {
-    atkDamages = io.nfg.wmg.battle.helpers.UnitHelper.applyModifier(io.nfg.wmg.battle.helpers.UnitHelper["unitsConfig"][attackerData.type]['atk'], config.atk);
+    atkDamages = io.nfg.wmg.battle.helpers.UnitHelper.applyModifier(attackerData.deckUnit.getStat('atk'), config.atk);
     atkDamages = Math.max(1, atkDamages - io.nfg.wmg.battle.helpers.UnitHelper.applyModifiers(targetData, "def"));
   }
+  io.nfg.wmg.battle.CombatsLogic._log(attackerData.type + " made", io.nfg.wmg.battle.helpers.UnitHelper.applyModifiers(attackerData, "dmg", Math.ceil(atkDamages + magDamages)), "dmg to", targetData.type);
   return atkDamages + magDamages;
 };
 

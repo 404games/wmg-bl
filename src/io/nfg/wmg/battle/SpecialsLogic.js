@@ -130,9 +130,9 @@ io.nfg.wmg.battle.SpecialsLogic.__generic = function(battle, originEntity, targe
       var /** @type {io.nfg.core.Pos} */ start = startUnit.tilePos.clone();
       start.x += io.nfg.wmg.battle.helpers.UnitHelper.getDim(startUnit) * .5;
       start.y += io.nfg.wmg.battle.helpers.UnitHelper.getDim(startUnit) * .5;
-      battle.tileMap.setTileToOccupied(originUnit.tilePos.x, originUnit.tilePos.y, io.nfg.wmg.battle.helpers.UnitHelper.getDim(originUnit));
+      battle.tileMap.setTileToOccupied(originUnit.tilePos.x, originUnit.tilePos.y, originUnit.dim);
       options.pushConfig = io.nfg.wmg.battle.Mechanics.push(targetEntity, battle, start, goal, config.push || config.pull);
-      battle.tileMap.setTileToFree(originUnit.tilePos.x, originUnit.tilePos.y, io.nfg.wmg.battle.helpers.UnitHelper.getDim(originUnit));
+      battle.tileMap.setTileToFree(originUnit.tilePos.x, originUnit.tilePos.y, originUnit.dim);
       io.nfg.wmg.battle.SpecialsLogic._log('pushing or pulling', options.pushConfig, distance);
     }
     if (battle.removeIfDead(targetEntity) == false) {
