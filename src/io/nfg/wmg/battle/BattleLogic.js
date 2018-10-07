@@ -738,13 +738,8 @@ io.nfg.wmg.battle.BattleLogic.prototype.unitMove = function(entityId, gid) {
   if (io.nfg.wmg.battle.helpers.StatusHelper.hasStatus(unit, 'tackled'))
     throw 'Unit is tackled, can\'t move';
   var /** @type {Array} */ path = io.nfg.wmg.battle.helpers.BattleHelper.unitMoveTo(entity, pos, this._tileMap, this._tilesInRange);
-  var /** @type {number} */ i;
-  for (i = path.length - 1; i > -1; i--) {
-    if (io.nfg.wmg.battle.helpers.BattleHelper.isTileInRange(path[i], this._tilesInRange))
-      break;
-    path.pop();
-    pos = path[i];
-  }
+  if (path[path.length - 1].equals(pos) == false)
+    throw new Error('Unit can\'t move to invalid goal', pos);
   if (path.length < 1)
     throw "Unit " + entity.toString() + ":" + unit.type + " can't move to " + pos;
   var /** @type {org.incubatio.Entity} */ opportunityEntity;
@@ -773,6 +768,7 @@ io.nfg.wmg.battle.BattleLogic.prototype.unitMove = function(entityId, gid) {
   var /** @type {io.nfg.wmg.models.SpecialTile} */ specialTile;
   if (io.nfg.wmg.battle.helpers.UnitHelper.isTraversingObstacle(unit) == false) {
     var /** @type {io.nfg.core.Pos} */ pos2;
+    var /** @type {number} */ i;
     for (i in path) {
       pos2 = path[i];
       specialTile = this._tileMap.getSpecialTile(pos2.x, pos2.y, io.nfg.wmg.battle.helpers.UnitHelper.getDim(unit));
@@ -822,7 +818,7 @@ io.nfg.wmg.battle.BattleLogic.prototype.unitAttack = function(entityId, targetGi
   var /** @type {org.incubatio.Entity} */ targetEntity = this.unitMap[targetGid];
   var /** @type {io.nfg.wmg.battle.components.UnitData} */ targetUnit = targetEntity.getComponent(io.nfg.wmg.battle.components.UnitData);
   var /** @type {boolean} */ isRanged = io.nfg.wmg.battle.helpers.UnitHelper.isRanged(originUnit) && this._activeUnitHasEnemyNeighbour == false;
-  if (isRanged == false && io.nfg.wmg.battle.helpers.BattleHelper.isUnitInContact(originUnit, targetUnit, this._tileMap) == false)
+  if (isRanged == false && io.nfg.wmg.battle.helpers.BattleHelper.areUnitInContact(originUnit, targetUnit, this._tileMap) == false)
     throw new Error('Unit needs to be in contact to be attacked');
   var /** @type {Array} */ actions = [];
   var /** @type {number} */ order;
@@ -1041,7 +1037,6 @@ io.nfg.wmg.battle.BattleLogic.prototype.spell = function(spellName, targetGid, o
     var /** @type {string} */ methodName = io.nfg.wmg.battle.SpellsLogic[spellName] == undefined ? "__generic" : spellName;
     var /** @type {io.nfg.core.Pos} */ targetPos = this._tileMap.gid2TilePos(targetGid);
     var /** @type {Array} */ targets;
-    org.apache.royale.utils.Language.trace(config.targeting, originGid, spellName);
     if (originGid > -1)
       targets = io.nfg.wmg.battle.helpers.BattleHelper.getTargets(config.targeting, this, this._tileMap.gid2TilePos(originGid), null, config);
     else

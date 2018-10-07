@@ -77,7 +77,8 @@ io.nfg.core.pathfinding.AStar.reach = function(start, goal, grid, range) {
       current = org.apache.royale.utils.Language.as(openedSet.dequeue(), io.nfg.core.pathfinding.AStarNode);
       if (current.f < closestGoal.f)
         closestGoal = current;
-      if (current.gid != goalGid) {
+      if (current.gid == goalGid)
+        length = 0; else {
         successors = (current.p == null) ? io.nfg.core.pathfinding.AStar.getAllSuccessors(current, grid) : io.nfg.core.pathfinding.AStar.getDirSuccessors(current, grid);
         for (i = 0; i < successors.length; i++) {
           successor = successors[i];
@@ -97,8 +98,6 @@ io.nfg.core.pathfinding.AStar.reach = function(start, goal, grid, range) {
           closedSet[successor.gid] = successor;
         }
         length = openedSet.size();
-      } else {
-        length = 0;
       }
     } while (length && iterations++ < io.nfg.core.pathfinding.AStar._maxItereations);
     current = closestGoal;

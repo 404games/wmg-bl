@@ -167,7 +167,7 @@ io.nfg.wmg.battle.SpecialsLogic._summon = function(battle, originEntity, targetP
   var /** @type {Object} */ options = {};
   var /** @type {io.nfg.wmg.battle.components.UnitData} */ originUnit = originEntity.getComponent(io.nfg.wmg.battle.components.UnitData);
   var /** @type {io.nfg.wmg.battle.components.UnitData} */ targetUnit;
-  if (!io.nfg.wmg.battle.helpers.BattleHelper.isTileInContact(targetPos, originUnit, battle.tileMap))
+  if (!io.nfg.wmg.battle.helpers.BattleHelper.isUnitInContact(originUnit, targetPos, battle.tileMap))
     throw "SPECIAL_ERROR_BAD_POSITION_FOR_SPAWN";
   var /** @type {org.incubatio.Entity} */ entity = io.nfg.wmg.battle.EntityFactory.create(battle.entities.length, new io.nfg.wmg.models.DeckUnit({type:unitName, pos:[targetPos.x, targetPos.y]}), battle.activeUnit.get('pIndex'));
   targetUnit = entity.getComponent(io.nfg.wmg.battle.components.UnitData);

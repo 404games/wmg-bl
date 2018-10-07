@@ -98,6 +98,8 @@ io.nfg.core.db.AModel._log;
  * @return {*}
  */
 io.nfg.core.db.AModel.prototype.get = function(key) {
+  if (this._schema.hasOwnProperty(key) == false)
+    throw key + ' is not defined in the schema';
   return this._edits.hasOwnProperty(key) ? this._edits[key] : this._attrs[key];
 };
 

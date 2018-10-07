@@ -57,7 +57,7 @@ io.nfg.wmg.models.DeckUnit.__schema = {id:Number, typeIndex:Number, armyIndex:Nu
  * @return {Object}
  */
 io.nfg.wmg.models.DeckUnit.__defaults = function() {
-  return {armyIndex:-1, typeIndex:-1, upgrades:'', fn:-1, ln:-1};
+  return {armyIndex:-1, typeIndex:-1, upgrades:'', xp:0, fn:-1, ln:-1};
 };
 
 

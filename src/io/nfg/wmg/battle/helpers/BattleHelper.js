@@ -299,9 +299,9 @@ io.nfg.wmg.battle.helpers.BattleHelper.getPathTo = function(entity, to, tileMap,
   movementRange = typeof movementRange !== 'undefined' ? movementRange : 0;
   avoidHole = typeof avoidHole !== 'undefined' ? avoidHole : false;
   var /** @type {Array} */ result;
-  var /** @type {io.nfg.wmg.models.SpecialTile} */ specialTile1 = tileMap.getSpecialTile(to.x, to.y);
-  var /** @type {io.nfg.wmg.models.SpecialTile} */ specialTile2;
   var /** @type {io.nfg.wmg.battle.components.UnitData} */ unit = entity.getComponent(io.nfg.wmg.battle.components.UnitData);
+  var /** @type {io.nfg.wmg.models.SpecialTile} */ specialTile1 = tileMap.getSpecialTile(to.x, to.y, unit.dim);
+  var /** @type {io.nfg.wmg.models.SpecialTile} */ specialTile2;
   if (!specialTile1 || specialTile1.type != io.nfg.wmg.models.SpecialTile.HOLE)
     avoidHole = true;
   if (avoidHole && io.nfg.wmg.battle.helpers.UnitHelper.isTraversingObstacle(unit) == false)
@@ -451,7 +451,7 @@ io.nfg.wmg.battle.helpers.BattleHelper.getEnemiesInContact = function(originEnti
   entity = foreachiter8_target[foreachiter8];
   {
     unit2 = entity.getComponent(io.nfg.wmg.battle.components.UnitData);
-    if (originEntity != entity && io.nfg.wmg.battle.helpers.BattleHelper.isUnitInContact(unit1, unit2, tileMap)) {
+    if (originEntity != entity && io.nfg.wmg.battle.helpers.BattleHelper.areUnitInContact(unit1, unit2, tileMap)) {
       result.push(entity);
     }
   }}
@@ -467,15 +467,45 @@ io.nfg.wmg.battle.helpers.BattleHelper.getEnemiesInContact = function(originEnti
  * @param {org.incubatio.TileMap} tileMap
  * @return {boolean}
  */
-io.nfg.wmg.battle.helpers.BattleHelper.isUnitInContact = function(unit1, unit2, tileMap) {
+io.nfg.wmg.battle.helpers.BattleHelper.areUnitInContact = function(unit1, unit2, tileMap) {
+  return io.nfg.wmg.battle.helpers.BattleHelper.areTileInContact(unit1.tilePos, unit1.dim, unit2.tilePos, unit2.dim, tileMap);
+};
+
+
+/**
+ * @export
+ * @param {io.nfg.wmg.battle.components.UnitData} unit
+ * @param {io.nfg.core.Pos} tilePos
+ * @param {org.incubatio.TileMap} tileMap
+ * @return {boolean}
+ */
+io.nfg.wmg.battle.helpers.BattleHelper.isUnitInContact = function(unit, tilePos, tileMap) {
+  return io.nfg.wmg.battle.helpers.BattleHelper.isTileInContact(unit.tilePos, unit.dim, tilePos, tileMap);
+};
+
+
+/**
+ * @export
+ * @param {io.nfg.core.Pos} tilePos1
+ * @param {number} dim
+ * @param {io.nfg.core.Pos} tilePos2
+ * @param {org.incubatio.TileMap} tileMap
+ * @return {boolean}
+ */
+io.nfg.wmg.battle.helpers.BattleHelper.isTileInContact = function(tilePos1, dim, tilePos2, tileMap) {
+  var /** @type {number} */ minX = tilePos1.x > 1 ? tilePos1.x - 1 : tilePos1.x;
+  var /** @type {number} */ maxX = dim == 1 ? tilePos1.x + 1 : tilePos1.x + 2;
+  maxX = maxX > tileMap.cols ? tileMap.cols : maxX;
+  var /** @type {number} */ minY = tilePos1.y > 1 ? tilePos1.y - 1 : tilePos1.y;
+  var /** @type {number} */ maxY = dim == 1 ? tilePos1.y + 1 : tilePos1.y + 2;
+  maxY = maxY > tileMap.rows ? tileMap.rows : maxY;
   var /** @type {number} */ i;
   var /** @type {number} */ j;
-  var /** @type {number} */ dim = io.nfg.wmg.battle.helpers.UnitHelper.getDim(unit1);
-  var /** @type {io.nfg.core.Pos} */ pos = new io.nfg.core.Pos();
-  for (i = 0; i < dim; i++) {
-    for (j = 0; j < dim; j++) {
-      pos.setTo(unit1.tilePos.x + i, unit1.tilePos.y + j);
-      if (io.nfg.wmg.battle.helpers.BattleHelper.isTileInContact(pos, unit2, tileMap))
+  for (i = minX; i <= maxX; i++) {
+    if (i != tilePos2.x)
+      continue;
+    for (j = minY; j <= maxY; j++) {
+      if (j == tilePos2.y)
         return true;
     }
   }
@@ -485,26 +515,21 @@ io.nfg.wmg.battle.helpers.BattleHelper.isUnitInContact = function(unit1, unit2, 
 
 /**
  * @export
- * @param {io.nfg.core.Pos} tilePos
- * @param {io.nfg.wmg.battle.components.UnitData} unit
+ * @param {io.nfg.core.Pos} tilePos1
+ * @param {number} dim1
+ * @param {io.nfg.core.Pos} tilePos2
+ * @param {number} dim2
  * @param {org.incubatio.TileMap} tileMap
  * @return {boolean}
  */
-io.nfg.wmg.battle.helpers.BattleHelper.isTileInContact = function(tilePos, unit, tileMap) {
-  var /** @type {number} */ dim = io.nfg.wmg.battle.helpers.UnitHelper.getDim(unit);
-  var /** @type {number} */ minX = unit.tilePos.x > 1 ? unit.tilePos.x - 1 : unit.tilePos.x;
-  var /** @type {number} */ maxX = dim == 1 ? unit.tilePos.x + 1 : unit.tilePos.x + 2;
-  maxX = maxX > tileMap.cols ? tileMap.cols : maxX;
-  var /** @type {number} */ minY = unit.tilePos.y > 1 ? unit.tilePos.y - 1 : unit.tilePos.y;
-  var /** @type {number} */ maxY = dim == 1 ? unit.tilePos.y + 1 : unit.tilePos.y + 2;
-  maxY = maxY > tileMap.rows ? tileMap.rows : maxY;
+io.nfg.wmg.battle.helpers.BattleHelper.areTileInContact = function(tilePos1, dim1, tilePos2, dim2, tileMap) {
   var /** @type {number} */ i;
   var /** @type {number} */ j;
-  for (i = minX; i <= maxX; i++) {
-    if (i != tilePos.x)
-      continue;
-    for (j = minY; j <= maxY; j++) {
-      if (j == tilePos.y)
+  var /** @type {io.nfg.core.Pos} */ pos = new io.nfg.core.Pos();
+  for (i = 0; i < dim1; i++) {
+    for (j = 0; j < dim1; j++) {
+      pos.setTo(tilePos1.x + i, tilePos1.y + j);
+      if (io.nfg.wmg.battle.helpers.BattleHelper.isTileInContact(tilePos2, dim2, pos, tileMap))
         return true;
     }
   }
@@ -801,8 +826,10 @@ io.nfg.wmg.battle.helpers.BattleHelper.prototype.ROYALE_REFLECTION_INFO = functi
         '|getRangeArea': { type: 'Vector.<io.nfg.core.Pos>', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false },{ index: 2, type: 'org.incubatio.TileMap', optional: false },{ index: 3, type: 'Boolean', optional: true } ]; }},
         '|getEnemiesInAttackRange': { type: 'Vector.<org.incubatio.Entity>', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'org.incubatio.Entity', optional: false },{ index: 2, type: 'Vector.<Boolean>', optional: false },{ index: 3, type: 'Vector.<org.incubatio.Entity>', optional: false },{ index: 4, type: 'org.incubatio.TileMap', optional: false } ]; }},
         '|getEnemiesInContact': { type: 'Vector.<org.incubatio.Entity>', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'org.incubatio.Entity', optional: false },{ index: 2, type: 'Vector.<Boolean>', optional: false },{ index: 3, type: 'Vector.<org.incubatio.Entity>', optional: false },{ index: 4, type: 'org.incubatio.TileMap', optional: false } ]; }},
-        '|isUnitInContact': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false },{ index: 2, type: 'io.nfg.wmg.battle.components.UnitData', optional: false },{ index: 3, type: 'org.incubatio.TileMap', optional: false } ]; }},
-        '|isTileInContact': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.core.Pos', optional: false },{ index: 2, type: 'io.nfg.wmg.battle.components.UnitData', optional: false },{ index: 3, type: 'org.incubatio.TileMap', optional: false } ]; }},
+        '|areUnitInContact': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false },{ index: 2, type: 'io.nfg.wmg.battle.components.UnitData', optional: false },{ index: 3, type: 'org.incubatio.TileMap', optional: false } ]; }},
+        '|isUnitInContact': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false },{ index: 2, type: 'io.nfg.core.Pos', optional: false },{ index: 3, type: 'org.incubatio.TileMap', optional: false } ]; }},
+        '|isTileInContact': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.core.Pos', optional: false },{ index: 2, type: 'Number', optional: false },{ index: 3, type: 'io.nfg.core.Pos', optional: false },{ index: 4, type: 'org.incubatio.TileMap', optional: false } ]; }},
+        '|areTileInContact': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.core.Pos', optional: false },{ index: 2, type: 'Number', optional: false },{ index: 3, type: 'io.nfg.core.Pos', optional: false },{ index: 4, type: 'Number', optional: false },{ index: 5, type: 'org.incubatio.TileMap', optional: false } ]; }},
         '|unitIsNextTo': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false },{ index: 2, type: 'org.incubatio.Entity', optional: false },{ index: 3, type: 'Array', optional: false },{ index: 4, type: 'org.incubatio.TileMap', optional: false } ]; }},
         '|hasEnemyNeighbour': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false },{ index: 2, type: 'Array', optional: false },{ index: 3, type: 'org.incubatio.TileMap', optional: false } ]; }},
         '|createRangeAreaMap': { type: 'Vector.<Boolean>', declaredBy: 'io.nfg.wmg.battle.helpers.BattleHelper', parameters: function () { return [  { index: 1, type: 'Vector.<io.nfg.core.Pos>', optional: false },{ index: 2, type: 'org.incubatio.TileMap', optional: false } ]; }},

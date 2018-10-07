@@ -222,11 +222,10 @@ org.incubatio.TileMap.prototype.setupBorders = function() {
  * @export
  * @param {number} x
  * @param {number} y
- * @param {number=} blockingObjectDim
+ * @param {number} blockingObjectDim
  * @param {number=} initValue
  */
 org.incubatio.TileMap.prototype.setTileToOccupied = function(x, y, blockingObjectDim, initValue) {
-  blockingObjectDim = typeof blockingObjectDim !== 'undefined' ? blockingObjectDim : 1;
   initValue = typeof initValue !== 'undefined' ? initValue : 1;
   for (var /** @type {number} */ dim = 0; dim < this._allowedTileDims; dim++) {
     for (var /** @type {number} */ row = -dim; row < blockingObjectDim; row++) {
@@ -247,10 +246,9 @@ org.incubatio.TileMap.prototype.setTileToOccupied = function(x, y, blockingObjec
  * @export
  * @param {number} x
  * @param {number} y
- * @param {number=} blockingObjectDim
+ * @param {number} blockingObjectDim
  */
 org.incubatio.TileMap.prototype.setTileToFree = function(x, y, blockingObjectDim) {
-  blockingObjectDim = typeof blockingObjectDim !== 'undefined' ? blockingObjectDim : 1;
   for (var /** @type {number} */ dim = 0; dim < this._allowedTileDims; dim++) {
     for (var /** @type {number} */ row = -dim; row < blockingObjectDim; row++) {
       for (var /** @type {number} */ col = -dim; col < blockingObjectDim; col++) {
@@ -274,11 +272,10 @@ org.incubatio.TileMap.prototype.setTileToFree = function(x, y, blockingObjectDim
  * @export
  * @param {number} x
  * @param {number} y
- * @param {number=} dim
+ * @param {number} dim
  * @return {boolean}
  */
 org.incubatio.TileMap.prototype.isOccupied = function(x, y, dim) {
-  dim = typeof dim !== 'undefined' ? dim : 1;
   return this._collisionGrid[dim - 1][y][x] != null;
 };
 
@@ -312,11 +309,10 @@ org.incubatio.TileMap.prototype.setSpecialTile = function(x, y, type) {
  * @export
  * @param {number} x
  * @param {number} y
- * @param {number=} dim
+ * @param {number} dim
  * @return {io.nfg.wmg.models.SpecialTile}
  */
 org.incubatio.TileMap.prototype.getSpecialTile = function(x, y, dim) {
-  dim = typeof dim !== 'undefined' ? dim : 1;
   return this._specialGrid[dim - 1][y][x];
 };
 
@@ -325,11 +321,10 @@ org.incubatio.TileMap.prototype.getSpecialTile = function(x, y, dim) {
  * @export
  * @param {number} x
  * @param {number} y
- * @param {number=} dim
+ * @param {number} dim
  * @return {boolean}
  */
 org.incubatio.TileMap.prototype.isSpecialTile = function(x, y, dim) {
-  dim = typeof dim !== 'undefined' ? dim : 1;
   return this.getSpecialTile(x, y, dim) != null;
 };
 
@@ -432,12 +427,12 @@ org.incubatio.TileMap.prototype.ROYALE_REFLECTION_INFO = function () {
         'tilePos2Gid': { type: 'Number', declaredBy: 'org.incubatio.TileMap', parameters: function () { return [  { index: 1, type: 'Number', optional: false },{ index: 2, type: 'Number', optional: false } ]; }},
         'isOutOfBounds': { type: 'Boolean', declaredBy: 'org.incubatio.TileMap', parameters: function () { return [  { index: 1, type: 'Number', optional: false },{ index: 2, type: 'Number', optional: false } ]; }},
         'isOutOfUsableBounds': { type: 'Boolean', declaredBy: 'org.incubatio.TileMap', parameters: function () { return [  { index: 1, type: 'Number', optional: false },{ index: 2, type: 'Number', optional: false } ]; }},
-        'setTileToOccupied': { type: 'void', declaredBy: 'org.incubatio.TileMap', parameters: function () { return [  { index: 1, type: 'Number', optional: false },{ index: 2, type: 'Number', optional: false },{ index: 3, type: 'Number', optional: true },{ index: 4, type: 'Number', optional: true } ]; }},
-        'setTileToFree': { type: 'void', declaredBy: 'org.incubatio.TileMap', parameters: function () { return [  { index: 1, type: 'Number', optional: false },{ index: 2, type: 'Number', optional: false },{ index: 3, type: 'Number', optional: true } ]; }},
-        'isOccupied': { type: 'Boolean', declaredBy: 'org.incubatio.TileMap', parameters: function () { return [  { index: 1, type: 'Number', optional: false },{ index: 2, type: 'Number', optional: false },{ index: 3, type: 'Number', optional: true } ]; }},
+        'setTileToOccupied': { type: 'void', declaredBy: 'org.incubatio.TileMap', parameters: function () { return [  { index: 1, type: 'Number', optional: false },{ index: 2, type: 'Number', optional: false },{ index: 3, type: 'Number', optional: false },{ index: 4, type: 'Number', optional: true } ]; }},
+        'setTileToFree': { type: 'void', declaredBy: 'org.incubatio.TileMap', parameters: function () { return [  { index: 1, type: 'Number', optional: false },{ index: 2, type: 'Number', optional: false },{ index: 3, type: 'Number', optional: false } ]; }},
+        'isOccupied': { type: 'Boolean', declaredBy: 'org.incubatio.TileMap', parameters: function () { return [  { index: 1, type: 'Number', optional: false },{ index: 2, type: 'Number', optional: false },{ index: 3, type: 'Number', optional: false } ]; }},
         'setSpecialTile': { type: 'void', declaredBy: 'org.incubatio.TileMap', parameters: function () { return [  { index: 1, type: 'Number', optional: false },{ index: 2, type: 'Number', optional: false },{ index: 3, type: 'String', optional: false } ]; }},
-        'getSpecialTile': { type: 'io.nfg.wmg.models.SpecialTile', declaredBy: 'org.incubatio.TileMap', parameters: function () { return [  { index: 1, type: 'Number', optional: false },{ index: 2, type: 'Number', optional: false },{ index: 3, type: 'Number', optional: true } ]; }},
-        'isSpecialTile': { type: 'Boolean', declaredBy: 'org.incubatio.TileMap', parameters: function () { return [  { index: 1, type: 'Number', optional: false },{ index: 2, type: 'Number', optional: false },{ index: 3, type: 'Number', optional: true } ]; }}
+        'getSpecialTile': { type: 'io.nfg.wmg.models.SpecialTile', declaredBy: 'org.incubatio.TileMap', parameters: function () { return [  { index: 1, type: 'Number', optional: false },{ index: 2, type: 'Number', optional: false },{ index: 3, type: 'Number', optional: false } ]; }},
+        'isSpecialTile': { type: 'Boolean', declaredBy: 'org.incubatio.TileMap', parameters: function () { return [  { index: 1, type: 'Number', optional: false },{ index: 2, type: 'Number', optional: false },{ index: 3, type: 'Number', optional: false } ]; }}
       };
     }
   };
