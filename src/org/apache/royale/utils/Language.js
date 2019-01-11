@@ -8,8 +8,6 @@
  */
 
 goog.provide('org.apache.royale.utils.Language');
-
-goog.require('goog.DEBUG');
 goog.require('org.apache.royale.utils.Language');
 
 
@@ -77,7 +75,7 @@ org.apache.royale.utils.Language.as = function(leftOperand, rightOperand, coerci
   var /** @type {Error} */ error, /** @type {boolean} */ itIs, /** @type {string} */ message;
   coercion = (coercion !== undefined) ? coercion : false;
   itIs = org.apache.royale.utils.Language.is(leftOperand, rightOperand);
-  if (!itIs && coercion) {
+  if (!itIs && coercion && leftOperand) {
     message = 'Type Coercion failed';
     if (TypeError) {
       error = new TypeError(message);
@@ -139,11 +137,12 @@ org.apache.royale.utils.Language.is = function(leftOperand, rightOperand) {
     return true;
   if (rightOperand === Object)
     return true;
-  if (typeof(leftOperand) === 'string')
+  var /** @type {string} */ theType = typeof(leftOperand);
+  if (theType === 'string')
     return rightOperand === String;
-  if (typeof(leftOperand) === 'number')
+  if (theType === 'number')
     return rightOperand === Number;
-  if (typeof(leftOperand) === 'boolean')
+  if (theType === 'boolean')
     return rightOperand === Boolean;
   if (rightOperand === Array)
     return Array.isArray(leftOperand);
@@ -154,8 +153,7 @@ org.apache.royale.utils.Language.is = function(leftOperand, rightOperand) {
       return true;
     }
   }
-  superClass = leftOperand.constructor;
-  superClass = superClass.superClass_;
+  superClass = leftOperand.constructor.superClass_;
   if (superClass) {
     while (superClass && superClass.ROYALE_CLASS_INFO) {
       if (superClass.ROYALE_CLASS_INFO.interfaces) {
@@ -163,8 +161,7 @@ org.apache.royale.utils.Language.is = function(leftOperand, rightOperand) {
           return true;
         }
       }
-      superClass = superClass.constructor;
-      superClass = superClass.superClass_;
+      superClass = superClass.constructor.superClass_;
     }
   }
   return false;
@@ -218,14 +215,14 @@ org.apache.royale.utils.Language.prototype.asClass = function(classDef) {
 
 
 /**
+ * @royaledebug
  * @export
  * @param {...} rest
  */
 org.apache.royale.utils.Language.trace = function(rest) {
+  rest = rest;if(!goog.DEBUG)return;
   rest = Array.prototype.slice.call(arguments, 0);
   var /** @type {*} */ theConsole;
-  if (!goog.DEBUG)
-    return;
   theConsole = goog.global["console"];
   if (theConsole === undefined) {
     if (typeof(window) !== "undefined") {
@@ -277,6 +274,85 @@ org.apache.royale.utils.Language.closure = function(fn, object, boundMethodName)
   var /** @type {Function} */ boundMethod = goog.bind(fn, object);
   Object.defineProperty(object, boundMethodName, {value:boundMethod});
   return boundMethod;
+};
+
+
+/**
+ * @asparam	arr
+ * @asparam	names
+ * @asparam	opt
+ * @export
+ * @param {Array} arr
+ * @param {...} args
+ */
+org.apache.royale.utils.Language.sort = function(arr, args) {
+  args = Array.prototype.slice.call(arguments, 1);
+  var /** @type {Function} */ compareFunction = null;
+  var /** @type {number} */ opt = 0;
+  if (args.length == 1) {
+    if (typeof(args[0]) === "function")
+      compareFunction = args[0];
+    else
+      opt = Number(args[0]);
+  } else if (args.length == 2) {
+    compareFunction = args[0];
+    opt = Number(args[1]);
+  }
+  org.apache.royale.utils.Language.muler = (2 & opt) > 0 ? -1 : 1;
+  if (compareFunction)
+    arr.sort(compareFunction); else if (opt & 16) {
+    arr.sort(org.apache.royale.utils.Language.compareAsNumber);
+  } else if (opt & 1) {
+    arr.sort(org.apache.royale.utils.Language.compareAsStringCaseinsensitive);
+  } else {
+    arr.sort(org.apache.royale.utils.Language.compareAsString);
+  }
+};
+
+
+/**
+ * @private
+ * @param {Object} a
+ * @param {Object} b
+ * @return {number}
+ */
+org.apache.royale.utils.Language.compareAsStringCaseinsensitive = function(a, b) {
+  var /** @type {number} */ v = Number((a || org.apache.royale.utils.Language.zeroStr).toString().toLowerCase().localeCompare((b || org.apache.royale.utils.Language.zeroStr).toString().toLowerCase()));
+  if (v != 0) {
+    return v * org.apache.royale.utils.Language.muler;
+  }
+  return 0;
+};
+
+
+/**
+ * @private
+ * @param {Object} a
+ * @param {Object} b
+ * @return {number}
+ */
+org.apache.royale.utils.Language.compareAsString = function(a, b) {
+  var /** @type {number} */ v = Number((a || org.apache.royale.utils.Language.zeroStr).toString().localeCompare((b || org.apache.royale.utils.Language.zeroStr).toString()));
+  if (v != 0) {
+    return v * org.apache.royale.utils.Language.muler;
+  }
+  return 0;
+};
+
+
+/**
+ * @private
+ * @param {Object} a
+ * @param {Object} b
+ * @return {number}
+ */
+org.apache.royale.utils.Language.compareAsNumber = function(a, b) {
+  if (a > b) {
+    return org.apache.royale.utils.Language.muler;
+  } else if (a < b) {
+    return -org.apache.royale.utils.Language.muler;
+  }
+  return 0;
 };
 
 
@@ -439,6 +515,7 @@ org.apache.royale.utils.Language.prototype.ROYALE_REFLECTION_INFO = function () 
         '|trace': { type: 'void', declaredBy: 'org.apache.royale.utils.Language', parameters: function () { return [  { index: 1, type: 'Array', optional: false } ]; }},
         '|uint': { type: 'Number', declaredBy: 'org.apache.royale.utils.Language', parameters: function () { return [  { index: 1, type: 'Number', optional: false } ]; }},
         '|closure': { type: 'Function', declaredBy: 'org.apache.royale.utils.Language', parameters: function () { return [  { index: 1, type: 'Function', optional: false },{ index: 2, type: 'Object', optional: false },{ index: 3, type: 'String', optional: false } ]; }},
+        '|sort': { type: 'void', declaredBy: 'org.apache.royale.utils.Language', parameters: function () { return [  { index: 1, type: 'Array', optional: false },{ index: 2, type: 'Array', optional: false } ]; }},
         '|sortOn': { type: 'void', declaredBy: 'org.apache.royale.utils.Language', parameters: function () { return [  { index: 1, type: 'Array', optional: false },{ index: 2, type: 'Object', optional: false },{ index: 3, type: 'Object', optional: true } ]; }},
         '|Vector': { type: 'Array', declaredBy: 'org.apache.royale.utils.Language', parameters: function () { return [  { index: 1, type: 'int', optional: true },{ index: 2, type: 'String', optional: true } ]; }}
       };

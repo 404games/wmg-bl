@@ -8,13 +8,14 @@
  */
 
 goog.provide('io.nfg.wmg.battle.components.UnitData');
-/* Royale Static Dependency List: io.nfg.wmg.models.DeckUnit,io.nfg.core.Pos*/
+/* Royale Static Dependency List: io.nfg.wmg.models.DeckUnit,io.nfg.core.Pos,org.apache.royale.utils.Language,org.apache.royale.utils.Language*/
 
 goog.require('io.nfg.core.Pos');
 goog.require('io.nfg.core.db.AModel');
 goog.require('io.nfg.wmg.battle.helpers.UnitHelper');
 goog.require('io.nfg.wmg.models.DeckUnit');
 goog.require('org.incubatio.core.AComponent');
+goog.require('org.apache.royale.utils.Language');
 
 
 
@@ -140,7 +141,7 @@ io.nfg.wmg.battle.components.UnitData.prototype.set__damageTaken = function(dmg)
 
 
 io.nfg.wmg.battle.components.UnitData.prototype.get__dim = function() {
-  return io.nfg.wmg.battle.helpers.UnitHelper.getDim(this);
+  return io.nfg.wmg.battle.helpers.UnitHelper["unitsConfig"][this.type]["size"];
 };
 
 

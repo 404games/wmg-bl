@@ -111,22 +111,21 @@ io.nfg.core.db.AModel.prototype.get = function(key) {
  * @return {io.nfg.core.db.AModel}
  */
 io.nfg.core.db.AModel.prototype.set = function(key, value) {
-  if (this._schema.hasOwnProperty(key) == false) {
-    io.nfg.core.db.AModel._log(key, 'is not defined in the schema');
-  } else {
-    if (value && org.apache.royale.utils.Language.is(value, this._schema[key]) == false) {
-      try {
-        if (io.nfg.core.db.AModel.CASTING_TYPES.indexOf(this._schema[key]) > -1) {
-          io.nfg.core.db.AModel._log('casting', key, 'from', typeof(value), 'to', this._schema[key]().constructor.name);
-          value = this._schema[key](value);
-        } else
-          io.nfg.core.db.AModel._log("Invalid value \"" + value + "\" for attribute \"" + key + "\" -> got " + typeof(value) + ", expected (" + key + ') ' + (new this._schema[key]()).constructor.name);
-      } catch (e) {
-        io.nfg.core.db.AModel._log('Casting failed for', key, value);
+  if (this._schema.hasOwnProperty(key) == false)
+    throw key + ' is not defined in the schema';
+  if (value && org.apache.royale.utils.Language.is(value, this._schema[key]) == false) {
+    try {
+      if (io.nfg.core.db.AModel.CASTING_TYPES.indexOf(this._schema[key]) > -1) {
+        io.nfg.core.db.AModel._log('Casting', key, 'from', typeof(value), 'to', this._schema[key]().constructor.name);
+        value = this._schema[key](value);
       }
-    }
-    this._edits[key] = value;
+      else
+        io.nfg.core.db.AModel._log("Invalid value \"" + value + "\" for attribute \"" + key + "\" -> got " + typeof(value) + ", expected " + this._schema[key]().constructor.name);
+    } catch (e) {
+      io.nfg.core.db.AModel._log('Casting failed for', key, value);
+     }
   }
+  this._edits[key] = value;
   return this;
 };
 

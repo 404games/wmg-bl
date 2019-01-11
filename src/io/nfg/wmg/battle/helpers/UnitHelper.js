@@ -64,16 +64,6 @@ io.nfg.wmg.battle.helpers.UnitHelper.getRiposteNum = function(unit) {
  * @param {io.nfg.wmg.battle.components.UnitData} unit
  * @return {number}
  */
-io.nfg.wmg.battle.helpers.UnitHelper.getDim = function(unit) {
-  return io.nfg.wmg.battle.helpers.UnitHelper["unitsConfig"][unit.type]["size"];
-};
-
-
-/**
- * @export
- * @param {io.nfg.wmg.battle.components.UnitData} unit
- * @return {number}
- */
 io.nfg.wmg.battle.helpers.UnitHelper.getHealth = function(unit) {
   return unit.deckUnit.getStat("vit") - unit.get('damageTaken');
 };
@@ -386,7 +376,6 @@ io.nfg.wmg.battle.helpers.UnitHelper.prototype.ROYALE_REFLECTION_INFO = function
         '|isAlive': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.UnitHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false } ]; }},
         '|isDead': { type: 'Boolean', declaredBy: 'io.nfg.wmg.battle.helpers.UnitHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false } ]; }},
         '|getRiposteNum': { type: 'Number', declaredBy: 'io.nfg.wmg.battle.helpers.UnitHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false } ]; }},
-        '|getDim': { type: 'Number', declaredBy: 'io.nfg.wmg.battle.helpers.UnitHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false } ]; }},
         '|getHealth': { type: 'Number', declaredBy: 'io.nfg.wmg.battle.helpers.UnitHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false } ]; }},
         '|instaKill': { type: 'void', declaredBy: 'io.nfg.wmg.battle.helpers.UnitHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false } ]; }},
         '|getHealthInPercent': { type: 'Number', declaredBy: 'io.nfg.wmg.battle.helpers.UnitHelper', parameters: function () { return [  { index: 1, type: 'io.nfg.wmg.battle.components.UnitData', optional: false } ]; }},

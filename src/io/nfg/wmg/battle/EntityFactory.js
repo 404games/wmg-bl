@@ -95,7 +95,7 @@ io.nfg.wmg.battle.EntityFactory.createEntitiesFromConfig = function(actors, tile
       io.nfg.wmg.battle.EntityFactory._log('unit', unitDesc);
       entity = io.nfg.wmg.battle.EntityFactory.create(entities.length, unitDesc, i);
       unitData = entity.getComponent(io.nfg.wmg.battle.components.UnitData);
-      xPos = Number(i == 0 ? unitDesc.get('pos')[0] : tileMap.cols - io.nfg.wmg.battle.helpers.UnitHelper.getDim(unitData) - unitDesc.get('pos')[0]);
+      xPos = Number(i == 0 ? unitDesc.get('pos')[0] : tileMap.cols - unitData.dim - unitDesc.get('pos')[0]);
       unitData.set('tilePos', new io.nfg.core.Pos(xPos, unitDesc.get('pos')[1]));
       unitData.set('name', unitDesc.get('name') ? unitDesc.get('name') : actor.get('name') + i + '_' + j++);
       entities[entities.length] = entity;

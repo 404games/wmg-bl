@@ -20,11 +20,13 @@ goog.require('org.apache.royale.utils.Language');
 /**
  * @constructor
  * @extends {io.nfg.core.db.AModel}
- * @param {Object} data
+ * @param {Object=} data
  */
 io.nfg.wmg.models.DeckUnit = function(data) {
+  data = typeof data !== 'undefined' ? data : null;
   
   this._getters = {};
+  data = data || {};
   io.nfg.wmg.models.DeckUnit.base(this, 'constructor', data, io.nfg.wmg.models.DeckUnit.__schema, io.nfg.wmg.models.DeckUnit.__defaults);
   this._getters = {typeIndex:org.apache.royale.utils.Language.closure(this.getUnitIndex, this, 'getUnitIndex'), armyIndex:org.apache.royale.utils.Language.closure(this.getSpecieIndex, this, 'getSpecieIndex'), type:org.apache.royale.utils.Language.closure(this.getType, this, 'getType'), level:org.apache.royale.utils.Language.closure(this.getLevel, this, 'getLevel'), name:org.apache.royale.utils.Language.closure(this.getName, this, 'getName')};
 };
@@ -410,8 +412,7 @@ io.nfg.wmg.models.DeckUnit.prototype.getStatModifiers = function() {
  * @return {number}
  */
 io.nfg.wmg.models.DeckUnit.prototype.getStat = function(statName) {
-  var /** @type {Object} */ unitConfs = io.nfg.wmg.utils.Resources.configs.logics.units;
-  return unitConfs[this.get('type')][statName] + this.getStatModifiers()[statName];
+  return io.nfg.wmg.models.DeckUnit["unitsConfig"][this.get('type')][statName] + this.getStatModifiers()[statName];
 };
 
 
@@ -420,12 +421,36 @@ io.nfg.wmg.models.DeckUnit.prototype.get__allSpecials = function() {
 };
 
 
+io.nfg.wmg.models.DeckUnit.prototype.get__dim = function() {
+  return io.nfg.wmg.models.DeckUnit["unitsConfig"][this.get('type')]["size"];
+};
+
+
 Object.defineProperties(io.nfg.wmg.models.DeckUnit.prototype, /** @lends {io.nfg.wmg.models.DeckUnit.prototype} */ {
 /**
   * @export
   * @type {Object} */
 allSpecials: {
-get: io.nfg.wmg.models.DeckUnit.prototype.get__allSpecials}}
+get: io.nfg.wmg.models.DeckUnit.prototype.get__allSpecials},
+/**
+  * @export
+  * @type {number} */
+dim: {
+get: io.nfg.wmg.models.DeckUnit.prototype.get__dim}}
+);
+
+
+io.nfg.wmg.models.DeckUnit.get__unitsConfig = function() {
+  return io.nfg.wmg.utils.Resources.configs.logics.units;
+};
+
+
+Object.defineProperties(io.nfg.wmg.models.DeckUnit, /** @lends {io.nfg.wmg.models.DeckUnit} */ {
+/**
+  * @export
+  * @type {Object} */
+unitsConfig: {
+get: io.nfg.wmg.models.DeckUnit.get__unitsConfig}}
 );
 
 
@@ -448,12 +473,14 @@ io.nfg.wmg.models.DeckUnit.prototype.ROYALE_REFLECTION_INFO = function () {
     variables: function () {return {};},
     accessors: function () {
       return {
-        'allSpecials': { type: 'Object', access: 'readonly', declaredBy: 'io.nfg.wmg.models.DeckUnit'}
+        'allSpecials': { type: 'Object', access: 'readonly', declaredBy: 'io.nfg.wmg.models.DeckUnit'},
+        '|unitsConfig': { type: 'Object', access: 'readonly', declaredBy: 'io.nfg.wmg.models.DeckUnit'},
+        'dim': { type: 'Number', access: 'readonly', declaredBy: 'io.nfg.wmg.models.DeckUnit', metadata: function () { return [  ]; }}
       };
     },
     methods: function () {
       return {
-        'DeckUnit': { type: '', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: 'Object', optional: false } ]; }},
+        'DeckUnit': { type: '', declaredBy: 'io.nfg.wmg.models.DeckUnit', parameters: function () { return [  { index: 1, type: 'Object', optional: true } ]; }},
         'getUnitIndex': { type: 'Number', declaredBy: 'io.nfg.wmg.models.DeckUnit'},
         'getSpecieIndex': { type: 'Number', declaredBy: 'io.nfg.wmg.models.DeckUnit'},
         'getType': { type: 'String', declaredBy: 'io.nfg.wmg.models.DeckUnit'},

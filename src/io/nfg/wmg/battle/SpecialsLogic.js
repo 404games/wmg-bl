@@ -124,12 +124,12 @@ io.nfg.wmg.battle.SpecialsLogic.__generic = function(battle, originEntity, targe
     if (config.push || config.pull) {
       var /** @type {io.nfg.wmg.battle.components.UnitData} */ destUnit = config.push ? targetUnit : originUnit;
       var /** @type {io.nfg.core.Pos} */ goal = destUnit.tilePos.clone();
-      goal.x += io.nfg.wmg.battle.helpers.UnitHelper.getDim(destUnit) * .5;
-      goal.y += io.nfg.wmg.battle.helpers.UnitHelper.getDim(destUnit) * .5;
+      goal.x += destUnit.dim * .5;
+      goal.y += destUnit.dim * .5;
       var /** @type {io.nfg.wmg.battle.components.UnitData} */ startUnit = config.push ? originUnit : targetUnit;
       var /** @type {io.nfg.core.Pos} */ start = startUnit.tilePos.clone();
-      start.x += io.nfg.wmg.battle.helpers.UnitHelper.getDim(startUnit) * .5;
-      start.y += io.nfg.wmg.battle.helpers.UnitHelper.getDim(startUnit) * .5;
+      start.x += startUnit.dim * .5;
+      start.y += startUnit.dim * .5;
       battle.tileMap.setTileToOccupied(originUnit.tilePos.x, originUnit.tilePos.y, originUnit.dim);
       options.pushConfig = io.nfg.wmg.battle.Mechanics.push(targetEntity, battle, start, goal, config.push || config.pull);
       battle.tileMap.setTileToFree(originUnit.tilePos.x, originUnit.tilePos.y, originUnit.dim);
@@ -171,7 +171,7 @@ io.nfg.wmg.battle.SpecialsLogic._summon = function(battle, originEntity, targetP
     throw "SPECIAL_ERROR_BAD_POSITION_FOR_SPAWN";
   var /** @type {org.incubatio.Entity} */ entity = io.nfg.wmg.battle.EntityFactory.create(battle.entities.length, new io.nfg.wmg.models.DeckUnit({type:unitName, pos:[targetPos.x, targetPos.y]}), battle.activeUnit.get('pIndex'));
   targetUnit = entity.getComponent(io.nfg.wmg.battle.components.UnitData);
-  var /** @type {number} */ dim = io.nfg.wmg.battle.helpers.UnitHelper.getDim(targetUnit);
+  var /** @type {number} */ dim = targetUnit.dim;
   if (battle.tileMap.isOccupied(targetPos.x, targetPos.y, dim))
     throw "SPECIAL_ERROR_INSUFICIENT_SPACE_SPAWN";
   targetUnit.set('tilePos', targetPos);

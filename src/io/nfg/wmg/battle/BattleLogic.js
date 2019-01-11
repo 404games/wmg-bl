@@ -103,8 +103,8 @@ io.nfg.wmg.battle.BattleLogic = function(entities, actors, tileMap, objectives, 
   var /** @type {io.nfg.wmg.battle.components.UnitData} */ unitData;
   for (i = 0; i < this._aliveEntities.length; i++) {
     unitData = this._aliveEntities[i].getComponent(io.nfg.wmg.battle.components.UnitData);
-    io.nfg.wmg.battle.helpers.BattleHelper.placeUnitOnMap(this._aliveEntities[i], this._unitMap, this._tileMap.cols, io.nfg.wmg.battle.helpers.UnitHelper.getDim(unitData));
-    this._tileMap.setTileToOccupied(unitData.tilePos.x, unitData.tilePos.y, io.nfg.wmg.battle.helpers.UnitHelper.getDim(unitData));
+    io.nfg.wmg.battle.helpers.BattleHelper.placeUnitOnMap(this._aliveEntities[i], this._unitMap, this._tileMap.cols, unitData.dim);
+    this._tileMap.setTileToOccupied(unitData.tilePos.x, unitData.tilePos.y, unitData.dim);
   }
   this.updateMeleePenaltyStatus();
   if (!objectives || objectives.length < 1)
@@ -378,14 +378,13 @@ io.nfg.wmg.battle.BattleLogic.fromMission = function(mission, configs) {
         tileMap.setTileToOccupied(j, i, 1, 10000);
       } else if (isNaN(line[j]) == false) {
         tileMap.setTileToOccupied(j, i, Number(line[j]), 10000);
-      } else if (line[j] != ".") {
+      } else if (line[j] != "." && line[j] != "X") {
         tileMap.setSpecialTile(j, i, line[j]);
       }
     }
   }
   var /** @type {io.nfg.wmg.models.Actor} */ actor;
   var /** @type {io.nfg.wmg.models.DeckUnit} */ deckUnit;
-  var /** @type {number} */ dim;
   var /** @type {boolean} */ matched;
   var foreachiter2_target = mission.get('actors');
   for (var foreachiter2 in foreachiter2_target) 
@@ -401,13 +400,12 @@ io.nfg.wmg.battle.BattleLogic.fromMission = function(mission, configs) {
     {
     deckUnit = foreachiter3_target[foreachiter3];
     {
-      dim = Number(io.nfg.wmg.battle.helpers.UnitHelper["unitsConfig"][deckUnit.get('type')]["size"]);
       matched = false;
       for (j = 1; j < 4; j++) {
         for (i = 1; i < size[1] - 1; i++) {
-          if (tileMap.isOccupied(j, i, dim) == false) {
+          if (tileMap.isOccupied(j, i, deckUnit.dim) == false) {
             deckUnit.set('pos', [j, i]);
-            tileMap.setTileToOccupied(j, i, dim);
+            tileMap.setTileToOccupied(j, i, deckUnit.dim);
             matched = true;
             break;
           }
@@ -424,8 +422,7 @@ io.nfg.wmg.battle.BattleLogic.fromMission = function(mission, configs) {
     {
     deckUnit = foreachiter4_target[foreachiter4];
     {
-      dim = Number(io.nfg.wmg.battle.helpers.UnitHelper["unitsConfig"][deckUnit.get('type')]["size"]);
-      tileMap.setTileToFree(deckUnit.get('pos')[0], deckUnit.get('pos')[1], dim);
+      tileMap.setTileToFree(deckUnit.get('pos')[0], deckUnit.get('pos')[1], deckUnit.dim);
     }}
     
   }}
@@ -562,7 +559,7 @@ io.nfg.wmg.battle.BattleLogic.prototype.nextTurn = function(cb) {
   io.nfg.wmg.battle.BattleLogic._log("[NEXT TURN]");
   this.isNextTurn = false;
   if (this._activeUnit != null && io.nfg.wmg.battle.helpers.UnitHelper.getHealth(this._activeUnit) > 0)
-    this._tileMap.setTileToOccupied(this._activeUnit.tilePos.x, this._activeUnit.tilePos.y, io.nfg.wmg.battle.helpers.UnitHelper.getDim(this._activeUnit));
+    this._tileMap.setTileToOccupied(this._activeUnit.tilePos.x, this._activeUnit.tilePos.y, this._activeUnit.dim);
   var /** @type {org.incubatio.Entity} */ entity;
   var /** @type {Object} */ status;
   var foreachiter10_target = this.aliveEntities;
@@ -601,7 +598,7 @@ io.nfg.wmg.battle.BattleLogic.prototype.nextTurn = function(cb) {
     }}
     
     io.nfg.wmg.battle.StatusesLogic.play(this);
-    this._tileMap.setTileToFree(this._activeUnit.tilePos.x, this._activeUnit.tilePos.y, io.nfg.wmg.battle.helpers.UnitHelper.getDim(this._activeUnit));
+    this._tileMap.setTileToFree(this._activeUnit.tilePos.x, this._activeUnit.tilePos.y, this._activeUnit.dim);
     this.enemyIndex = this._activeUnit.get('pIndex') == 0 ? 1 : 0;
     this._updateUnitSurrounding();
     io.nfg.wmg.battle.BattleLogic._logStatus("UNIT STATUSES", this._activeUnit.type, this._activeUnit.get('statuses'));
@@ -738,10 +735,10 @@ io.nfg.wmg.battle.BattleLogic.prototype.unitMove = function(entityId, gid) {
   if (io.nfg.wmg.battle.helpers.StatusHelper.hasStatus(unit, 'tackled'))
     throw 'Unit is tackled, can\'t move';
   var /** @type {Array} */ path = io.nfg.wmg.battle.helpers.BattleHelper.unitMoveTo(entity, pos, this._tileMap, this._tilesInRange);
-  if (path[path.length - 1].equals(pos) == false)
-    throw new Error('Unit can\'t move to invalid goal', pos);
   if (path.length < 1)
     throw "Unit " + entity.toString() + ":" + unit.type + " can't move to " + pos;
+  if (path[path.length - 1].equals(pos) == false)
+    throw new Error('Unit ' + unit.type + ' can\'t move to invalid goal: ' + pos);
   var /** @type {org.incubatio.Entity} */ opportunityEntity;
   var /** @type {number} */ targetGid;
   var /** @type {io.nfg.core.Pos} */ fromPos;
@@ -771,14 +768,14 @@ io.nfg.wmg.battle.BattleLogic.prototype.unitMove = function(entityId, gid) {
     var /** @type {number} */ i;
     for (i in path) {
       pos2 = path[i];
-      specialTile = this._tileMap.getSpecialTile(pos2.x, pos2.y, io.nfg.wmg.battle.helpers.UnitHelper.getDim(unit));
+      specialTile = this._tileMap.getSpecialTile(pos2.x, pos2.y, unit.dim);
       if (specialTile && specialTile.type == io.nfg.wmg.models.SpecialTile.HOLE) {
         path = path.splice(0, i);
         break;
       }
     }
   } else if (io.nfg.wmg.battle.helpers.UnitHelper.isFlying(unit) == false) {
-    specialTile = this._tileMap.getSpecialTile(pos.x, pos.y, io.nfg.wmg.battle.helpers.UnitHelper.getDim(unit));
+    specialTile = this._tileMap.getSpecialTile(pos.x, pos.y, unit.dim);
   }
   var /** @type {Object} */ data = {path:path, originPosition:unit.tilePos};
   this.addBattlelogEntry(io.nfg.wmg.battle.BattleLogic.MOVE, entity, data);
@@ -907,7 +904,7 @@ io.nfg.wmg.battle.BattleLogic.prototype._unitRemove = function(entity) {
   }}
   
   if (entity != this._activeEntity)
-    this._tileMap.setTileToFree(unitData.tilePos.x, unitData.tilePos.y, io.nfg.wmg.battle.helpers.UnitHelper.getDim(unitData));
+    this._tileMap.setTileToFree(unitData.tilePos.x, unitData.tilePos.y, unitData.dim);
   io.nfg.wmg.battle.helpers.BattleHelper.removeUnitFromMap(entity, this._unitMap, this._tileMap.cols);
   this._deadGroups[unitData.get('pIndex')].push(entity);
 };

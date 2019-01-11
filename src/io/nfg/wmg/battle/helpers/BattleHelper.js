@@ -18,6 +18,7 @@ goog.require('io.nfg.wmg.battle.helpers.UnitHelper');
 goog.require('io.nfg.wmg.models.SpecialTile');
 goog.require('org.incubatio.Entity');
 goog.require('org.incubatio.TileMap');
+goog.require('org.apache.royale.utils.Language');
 
 
 
@@ -117,7 +118,7 @@ io.nfg.wmg.battle.helpers.BattleHelper.getFreeTilesInContact = function(tilePos,
  */
 io.nfg.wmg.battle.helpers.BattleHelper.getEntitiesInContact = function(entity, targetPos, unitMap, tileMap, pIndex) {
   pIndex = typeof pIndex !== 'undefined' ? pIndex : -1;
-  var /** @type {number} */ dim = io.nfg.wmg.battle.helpers.UnitHelper.getDim(entity.getComponent(io.nfg.wmg.battle.components.UnitData));
+  var /** @type {number} */ dim = Number(entity.getComponent(io.nfg.wmg.battle.components.UnitData).dim);
   var /** @type {number} */ minX = targetPos.x > 1 ? targetPos.x - 1 : targetPos.x;
   var /** @type {number} */ maxX = dim == 1 ? targetPos.x + 1 : targetPos.x + 2;
   maxX = maxX > tileMap.cols ? tileMap.cols : maxX;
@@ -277,7 +278,7 @@ io.nfg.wmg.battle.helpers.BattleHelper.unitMoveTo = function(entity, to, tileMap
   if (io.nfg.wmg.battle.helpers.UnitHelper.isTraversingObstacle(unit)) {
     path = [];
     if (!to.equals(from)) {
-      path = io.nfg.core.pathfinding.Simple.reach(from, to, tileMap.collisionGrid[io.nfg.wmg.battle.helpers.UnitHelper.getDim(unit) - 1], tileInRange, movementRange);
+      path = io.nfg.core.pathfinding.Simple.reach(from, to, tileMap.collisionGrid[unit.dim - 1], tileInRange, movementRange);
     }
   } else {
     path = io.nfg.wmg.battle.helpers.BattleHelper.getPathTo(entity, to, tileMap, movementRange);
@@ -313,7 +314,7 @@ io.nfg.wmg.battle.helpers.BattleHelper.getPathTo = function(entity, to, tileMap,
       if (specialTile2.type == io.nfg.wmg.models.SpecialTile.HOLE && specialTile1 != specialTile2)
         tileMap.setTileToOccupied(specialTile2.x, specialTile2.y, 2);}
     
-  var /** @type {Array} */ collisionGrid = tileMap.collisionGrid[io.nfg.wmg.battle.helpers.UnitHelper.getDim(unit) - 1];
+  var /** @type {Array} */ collisionGrid = tileMap.collisionGrid[unit.dim - 1];
   result = io.nfg.core.pathfinding.AStar.reach(unit.tilePos, to, collisionGrid, movementRange);
   if (avoidHole && io.nfg.wmg.battle.helpers.UnitHelper.isTraversingObstacle(unit) == false)
     var foreachiter1_target = tileMap.specialTiles;
@@ -373,7 +374,7 @@ io.nfg.wmg.battle.helpers.BattleHelper.getRangeArea = function(unit, tileMap, av
         if (specialTile.type == io.nfg.wmg.models.SpecialTile.HOLE)
           tileMap.setTileToOccupied(specialTile.x, specialTile.y, 2);}
       
-    area = io.nfg.core.pathfinding.AStar.explore(unit.tilePos, range, collisionGrid, io.nfg.wmg.battle.helpers.UnitHelper.getDim(unit));
+    area = io.nfg.core.pathfinding.AStar.explore(unit.tilePos, range, collisionGrid, unit.dim);
     if (avoidHole)
       var foreachiter5_target = tileMap.specialTiles;
       for (var foreachiter5 in foreachiter5_target) 
@@ -402,7 +403,7 @@ io.nfg.wmg.battle.helpers.BattleHelper.getEnemiesInAttackRange = function(origin
   var /** @type {io.nfg.wmg.battle.components.UnitData} */ targetUnit;
   var /** @type {io.nfg.core.Pos} */ from = originUnit.tilePos;
   var /** @type {io.nfg.core.Pos} */ to;
-  var /** @type {Array} */ grid = tileMap.collisionGrid[io.nfg.wmg.battle.helpers.UnitHelper.getDim(originUnit) - 1];
+  var /** @type {Array} */ grid = tileMap.collisionGrid[originUnit.dim - 1];
   var /** @type {number} */ squaredAttackRange = Math.pow(io.nfg.wmg.battle.helpers.UnitHelper.getMovementRange(originUnit) + 3, 2);
   var /** @type {io.nfg.core.Pos} */ tile;
   var /** @type {Array} */ result = [];
@@ -414,7 +415,7 @@ io.nfg.wmg.battle.helpers.BattleHelper.getEnemiesInAttackRange = function(origin
     targetUnit = targetEntity.getComponent(io.nfg.wmg.battle.components.UnitData);
     to = targetUnit.tilePos;
     if (io.nfg.core.pathfinding.AStar.euclidean(from, to) <= squaredAttackRange) {
-      var foreachiter7_target = io.nfg.wmg.battle.helpers.BattleHelper.getTilesInContact(to, tileMap, io.nfg.wmg.battle.helpers.UnitHelper.getDim(targetUnit), io.nfg.wmg.battle.helpers.UnitHelper.getDim(originUnit));
+      var foreachiter7_target = io.nfg.wmg.battle.helpers.BattleHelper.getTilesInContact(to, tileMap, targetUnit.dim, originUnit.dim);
       for (var foreachiter7 in foreachiter7_target) 
       {
       tile = foreachiter7_target[foreachiter7];
@@ -547,8 +548,8 @@ io.nfg.wmg.battle.helpers.BattleHelper.areTileInContact = function(tilePos1, dim
  */
 io.nfg.wmg.battle.helpers.BattleHelper.unitIsNextTo = function(unitData, target, unitMap, tileMap) {
   var /** @type {number} */ i, /** @type {number} */ j;
-  for (i = -1; i <= io.nfg.wmg.battle.helpers.UnitHelper.getDim(unitData); i++) {
-    for (j = -1; j <= io.nfg.wmg.battle.helpers.UnitHelper.getDim(unitData); j++) {
+  for (i = -1; i <= unitData.dim; i++) {
+    for (j = -1; j <= unitData.dim; j++) {
       if (unitMap[(unitData.tilePos.y + i) * tileMap.cols + unitData.tilePos.x + j] != null)
         if (target == unitMap[(unitData.tilePos.y + i) * tileMap.cols + unitData.tilePos.x + j]) {
           return true;
@@ -569,8 +570,8 @@ io.nfg.wmg.battle.helpers.BattleHelper.unitIsNextTo = function(unitData, target,
 io.nfg.wmg.battle.helpers.BattleHelper.hasEnemyNeighbour = function(unitData, unitMap, tileMap) {
   var /** @type {number} */ i, /** @type {number} */ j;
   var /** @type {org.incubatio.Entity} */ neighborEntity;
-  for (i = -1; i <= io.nfg.wmg.battle.helpers.UnitHelper.getDim(unitData); i++) {
-    for (j = -1; j <= io.nfg.wmg.battle.helpers.UnitHelper.getDim(unitData); j++) {
+  for (i = -1; i <= unitData.dim; i++) {
+    for (j = -1; j <= unitData.dim; j++) {
       neighborEntity = unitMap[(unitData.tilePos.y + i) * tileMap.cols + unitData.tilePos.x + j];
       if (neighborEntity && neighborEntity.getComponent(io.nfg.wmg.battle.components.UnitData).get('pIndex') != unitData.get('pIndex')) {
         return true;
@@ -788,7 +789,7 @@ io.nfg.wmg.battle.helpers.BattleHelper.getXpBonus = function(battle, pIndex, uni
   entity = foreachiter10_target[foreachiter10];
   {
     unit = entity.getComponent(io.nfg.wmg.battle.components.UnitData);
-    xpCount += unitConfs.xp[unit.deckUnit.getLevel()] * io.nfg.wmg.battle.helpers.UnitHelper.getDim(unit);
+    xpCount += unitConfs.xp[unit.deckUnit.getLevel()] * unit.dim;
   }}
   
   return Math.ceil(xpCount / battle.aliveGroups[pIndex].length);

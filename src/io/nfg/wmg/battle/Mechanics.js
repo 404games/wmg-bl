@@ -70,7 +70,7 @@ io.nfg.wmg.battle.Mechanics.push = function(entity, battle, start, goal, maxDist
     if (battle.tileMap.isOutOfUsableBounds(x, y) || battle.tileMap.isOccupied(x, y, dim)) {
       break;
     }
-    specialTile = battle.tileMap.getSpecialTile(x, y, io.nfg.wmg.battle.helpers.UnitHelper.getDim(unit));
+    specialTile = battle.tileMap.getSpecialTile(x, y, unit.dim);
     if (isNotFlying && specialTile && specialTile.type == io.nfg.wmg.models.SpecialTile.HOLE) {
       distance = hyp;
       dest.setTo(specialTile.x, specialTile.y);
@@ -116,11 +116,11 @@ io.nfg.wmg.battle.Mechanics.hole = function(entity, battle, dest) {
 io.nfg.wmg.battle.Mechanics.teleport = function(battle, entity, targetPos, range) {
   range = typeof range !== 'undefined' ? range : 0;
   var /** @type {io.nfg.wmg.battle.components.UnitData} */ unit = entity.getComponent(io.nfg.wmg.battle.components.UnitData);
-  var /** @type {number} */ dim = io.nfg.wmg.battle.helpers.UnitHelper.getDim(unit);
+  var /** @type {number} */ dim = unit.dim;
   var /** @type {boolean} */ isNotFlying = io.nfg.wmg.battle.helpers.UnitHelper.isFlying(unit) == false;
   if (entity != battle.activeEntity) {
     battle.tileMap.setTileToFree(unit.tilePos.x, unit.tilePos.y, dim);
-    battle.tileMap.setTileToOccupied(battle.activeUnit.tilePos.x, battle.activeUnit.tilePos.y, io.nfg.wmg.battle.helpers.UnitHelper.getDim(battle.activeUnit));
+    battle.tileMap.setTileToOccupied(battle.activeUnit.tilePos.x, battle.activeUnit.tilePos.y, battle.activeUnit.dim);
   }
   if (battle.tileMap.isOccupied(targetPos.x, targetPos.y, dim))
     throw "SPECIAL_TILE_OCCUPIED";

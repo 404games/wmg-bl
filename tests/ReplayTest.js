@@ -1,8 +1,8 @@
 process.env.WMG_BL_PATH = '../../../../src/';
-myLib = require('../src/index.js')
+wmg = require('../src/index.js')
 fs = require('fs');
 configs = JSON.parse(fs.readFileSync(__dirname + '/data.json'));
-myLib.Resources.initConfigs(configs);
+wmg.Resources.initConfigs(configs);
 
 renderBattleReport = function(battle, name) {
   console.log();
@@ -23,7 +23,7 @@ renderBattleReport = function(battle, name) {
       for (var foreachiter1 in foreachiter1_target) {
       entity = foreachiter1_target[foreachiter1];
       {
-        unit = entity.getComponent(myLib.UnitData);
+        unit = entity.getComponent(wmg.UnitData);
         console.log("    " + i + " - " + unit.type + " ( " + io.nfg.wmg.battle.helpers.UnitHelper.getHealthInPercent(unit) + "% ) + " + unit.damageTaken + " dmgs");
       }}
     }}
@@ -31,14 +31,14 @@ renderBattleReport = function(battle, name) {
 };
 
 
-var /** @type {string} */ logsStr = '[[3,[1,"wait1",null]],[1,[0,49]],[5,[0]],[1,[1,49]],[5,[1]],[1,[1,50]],[2,[1,49]],[2,[0,50,49]]]';
-var /** @type {string} */ missionName = 'full_example';
-var /** @type {Object} */ configs = myLib.Resources.configs;
+var logsStr = '[[1,[1,30]],[5,[1]],[2,[2,37]],[2,[0,22,37]],[1,[1,21]],[2,[1,22,21]]]';
+var /** @type {string} */ missionName = 'test_replay';
+var /** @type {Object} */ configs = wmg.Resources.configs;
 var /** @type {io.nfg.wmg.models.Mission} */ mission;
 var /** @type {io.nfg.wmg.battle.BattleLogic} */ battle;
-mission = new myLib.Mission(configs.missions[missionName]);
-battle = myLib.BattleLogic.fromMission(mission, configs);
-myLib.BattleHelper.replay(battle, JSON.parse(logsStr));
+mission = new wmg.Mission(configs.missions[missionName]);
+battle = wmg.BattleLogic.fromMission(mission, configs);
+wmg.BattleHelper.replay(battle, JSON.parse(logsStr));
 renderBattleReport(battle, missionName);
-console.log('player 0 xp bonus per unit:', myLib.BattleHelper.getXpBonus(battle, 0, configs.logics.units));
-console.log('player 1 xp bonus per unit:', myLib.BattleHelper.getXpBonus(battle, 1, configs.logics.units));
+console.log('player 0 xp bonus per unit:', wmg.BattleHelper.getXpBonus(battle, 0, configs.logics.units));
+console.log('player 1 xp bonus per unit:', wmg.BattleHelper.getXpBonus(battle, 1, configs.logics.units));
